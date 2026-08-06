@@ -1,0 +1,63 @@
+// 開発環境は SQLite で完結します。
+// 本番(Vercel等サーバーレス)にデプロイする際は、ファイルシステムが
+// 永続化されないため、DATABASE_URL を Postgres 等の
+// 常設DBの接続文字列に差し替えてください（Prismaの provider は
+// 環境ごとに変える場合 "postgresql" に変更が必要です）。
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Web予約（初診・再診・予約変更・キャンセル）
+model Reservation {
+  id          String   @id @default(cuid())
+  type        String // initial | followup | change | cancel
+  name        String
+  nameKana    String?
+  phone       String
+  email       String?
+  birthDate   String?
+  desiredDate String
+  desiredTime String // am | pm_early | pm_late
+  symptom     String?
+  notes       String?
+  status      String   @default("pending") // pending | confirmed | cancelled | done
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+// お知らせ（休診・診療時間変更などを管理画面から更新）
+model NewsPost {
+  id          String   @id @default(cuid())
+  title       String
+  body        String
+  category    String // general | closure | hours_change | obon | year_end
+  isPublished Boolean  @default(true)
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, publishedAt])
+}
+
+// お問い合わせフォーム
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  message   String
+  status    String   @default("new") // new | read | handled
+  createdAt DateTime @default(now())
+
+  @@index([status])
+}
