@@ -1,8 +1,6 @@
-// 開発環境は SQLite で完結します。
-// 本番(Vercel等サーバーレス)にデプロイする際は、ファイルシステムが
-// 永続化されないため、DATABASE_URL を Postgres 等の
-// 常設DBの接続文字列に差し替えてください（Prismaの provider は
-// 環境ごとに変える場合 "postgresql" に変更が必要です）。
+// Vercel等サーバーレス環境はファイルシステムが永続化されないため、
+// Postgresを使用します。DATABASE_URL には Postgres の接続文字列を
+// 設定してください（Vercel Storage の Neon連携等で自動設定可能）。
 
 generator client {
   provider = "prisma-client-js"
@@ -10,7 +8,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

@@ -10,7 +10,8 @@
 - Tailwind CSS v4
 - shadcn/ui 相当のUIコンポーネント（Radix UI + class-variance-authority、CLIレジストリが
   ネットワーク制限で使えない環境で構築したため手動実装）
-- Prisma（開発環境はSQLite）
+- Prisma／Postgres（Vercelはサーバーレスでファイルシステムが永続化されないため、
+  開発環境も含めてPostgresを使用します）
 - Vercelへのデプロイを想定
 
 ## 主な機能
@@ -31,11 +32,13 @@
 院内紹介／お知らせ／よくある質問／採用情報／お問い合わせ／ダウンロード／LINKS／
 プライバシーポリシー／サイトマップ(sitemap.xml)
 
-## セットアップ
+## セットアップ（ローカル開発）
+
+Postgresの接続先（ローカルPostgres、または後述のVercel/Neonの接続文字列）を用意してください。
 
 ```bash
 npm install
-cp .env.example .env   # ADMIN_PASSWORD, SESSION_SECRET を必ず変更する
+cp .env.example .env   # DATABASE_URL, ADMIN_PASSWORD, SESSION_SECRET を設定する
 npx prisma migrate dev
 npm run db:seed        # 初期のお知らせデータを投入（任意）
 npm run dev
@@ -43,21 +46,37 @@ npm run dev
 
 `.env` の主な項目：
 
-- `DATABASE_URL` … 開発時はSQLiteファイルでOK。
+- `DATABASE_URL` … Postgresの接続文字列。
 - `ADMIN_PASSWORD` … 管理画面 (`/admin`) のログインパスワード。
 - `SESSION_SECRET` … 管理セッションCookieの署名鍵。`openssl rand -hex 32` 等で生成。
 - `NEXT_PUBLIC_SITE_URL` … 本番公開ドメインが決まったら設定（`sitemap.xml`・OGP・canonicalに使用）。
 
-## 本番デプロイ時に必ず行うこと
+## Vercelで非公開プレビューを作る手順
 
-1. **DBの差し替え**：Vercel等のサーバーレス環境はファイルシステムが永続化されないため、
-   SQLiteのままでは予約・お知らせ・お問い合わせのデータが消えてしまいます。
-   Vercel Postgres・Supabase・Neon等の常設DBを用意し、`DATABASE_URL` を差し替えたうえで
-   `prisma/schema.prisma` の `datasource.provider` を `postgresql` に変更してください。
-   （`npm run build` は `prisma migrate deploy` を実行するため、マイグレーションはそのまま
-   本番DBにも適用されます。）
-2. `ADMIN_PASSWORD` と `SESSION_SECRET` を必ず推測困難な値に変更してください。
-3. `NEXT_PUBLIC_SITE_URL` に本番ドメインを設定してください。
+本番公開前に、中身だけ確認したい場合の手順です。
+
+1. [vercel.com](https://vercel.com) にログインし、「Add New」→「Project」から
+   GitHubリポジトリ `sansanbo1117-hue/aoyama-clinic-site` をインポートする。
+2. インポート画面（またはプロジェクト作成後の Storage タブ）で **Postgres** を追加する
+   （Neon連携。無料枠でOK）。追加すると `DATABASE_URL` が自動的に環境変数へ設定される。
+3. プロジェクトの **Settings → Environment Variables** に以下を追加する。
+   - `ADMIN_PASSWORD` … 管理画面ログイン用の任意のパスワード
+   - `SESSION_SECRET` … 任意のランダム文字列（例: `openssl rand -hex 32` の出力）
+4. Deploy を実行する。ビルド時に `prisma migrate deploy` が自動実行され、テーブルが作成される。
+5. デプロイ完了後に発行される `https://xxxxx.vercel.app` のURL（Preview/Production問わず）は
+   検索エンジンには表示されませんが、URLを知っていれば誰でも閲覧できる状態です。
+   本当に外部から見られたくない場合は、Vercelの「Deployment Protection」機能
+   （Settings → Deployment Protection）でパスワード保護を有効にしてください（Hobbyプランでも設定可）。
+6. 初回アクセス時は `/admin/news` にお知らせが1件も無い状態なので、必要であれば
+   ローカルから `npm run db:seed`（`DATABASE_URL` を本番の接続文字列に向けて実行）で
+   初期データを投入するか、管理画面から手動で追加してください。
+
+## 本番公開時に必ず行うこと
+
+1. `ADMIN_PASSWORD` と `SESSION_SECRET` を必ず推測困難な値に変更する。
+2. `NEXT_PUBLIC_SITE_URL` に本番ドメインを設定する。
+3. Vercelの「Deployment Protection」を外して一般公開に切り替える（プレビュー時に有効化していた場合）。
+4. `robots.ts` は `Allow: /` 設定済みなので、そのままで公開状態になる。
 
 ## 未確定・要確認の項目
 

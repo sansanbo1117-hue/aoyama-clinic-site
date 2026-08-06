@@ -35,13 +35,14 @@
 
 ## 公開前に必ず設定する項目（技術面）
 
+- DB接続（`DATABASE_URL`）はPostgres必須です（VercelのStorageタブからNeon連携で発行可能）。
+  README「Vercelで非公開プレビューを作る手順」を参照してください。
 - `.env` の `ADMIN_PASSWORD` / `SESSION_SECRET` を推測困難な値に変更する。
-- 本番用データベース（Vercel Postgres / Supabase 等）を用意し `DATABASE_URL` を差し替える
-  （SQLiteのままサーバーレス環境にデプロイすると、書き込んだデータが永続化されません）。
-  `prisma/schema.prisma` の `datasource.provider` も `postgresql` 等に変更が必要です。
 - `NEXT_PUBLIC_SITE_URL` に本番ドメインを設定する（`sitemap.xml`・OGP・canonicalに反映されます）。
 - `robots.ts` / 各ページの `metadata.robots` は公開用に `index, follow` 設定済みです
-  （`/admin` 配下のみ `noindex` を明示）。
+  （`/admin` 配下のみ `noindex` を明示）。プレビュー段階で外部に見せたくない場合は、
+  robots設定ではなくVercelの「Deployment Protection」（パスワード保護）を使ってください
+  （robotsのnoindexは検索避けにしかならず、URLを知っていれば誰でも閲覧できてしまうため）。
 
 ## 今回スコープ外（将来拡張として設計のみ考慮）
 
