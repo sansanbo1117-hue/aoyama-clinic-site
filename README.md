@@ -32,43 +32,58 @@
 院内紹介／お知らせ／よくある質問／採用情報／お問い合わせ／ダウンロード／LINKS／
 プライバシーポリシー／サイトマップ(sitemap.xml)
 
-## セットアップ（ローカル開発）
+## データベース接続の考え方
 
-Postgresの接続先（ローカルPostgres、または後述のVercel/Neonの接続文字列）を用意してください。
+`prisma/schema.prisma` は `url`（実行時のプール接続）と `directUrl`（マイグレーション用の
+直接接続）の2本立てになっています。Supabase等のプーラー(PgBouncer)経由の接続では、
+マイグレーション（DDL）がプール接続だと失敗することがあるためです。
+
+また、他のアプリと同じPostgresインスタンス／Supabaseプロジェクトを共用する場合は、
+接続文字列の末尾に `&schema=専用スキーマ名` を付けて、他アプリのテーブルと衝突しない
+専用スキーマに分離してください（本プロジェクトでは `aoyama_clinic` というスキーマ名を
+使う想定です）。
+
+## セットアップ（ローカル開発）
 
 ```bash
 npm install
-cp .env.example .env   # DATABASE_URL, ADMIN_PASSWORD, SESSION_SECRET を設定する
+cp .env.example .env   # DATABASE_URL, DIRECT_URL, ADMIN_PASSWORD, SESSION_SECRET を設定する
 npx prisma migrate dev
 npm run db:seed        # 初期のお知らせデータを投入（任意）
 npm run dev
 ```
 
-`.env` の主な項目：
+`.env` の主な項目は `.env.example` のコメントを参照してください。
 
-- `DATABASE_URL` … Postgresの接続文字列。
-- `ADMIN_PASSWORD` … 管理画面 (`/admin`) のログインパスワード。
-- `SESSION_SECRET` … 管理セッションCookieの署名鍵。`openssl rand -hex 32` 等で生成。
-- `NEXT_PUBLIC_SITE_URL` … 本番公開ドメインが決まったら設定（`sitemap.xml`・OGP・canonicalに使用）。
+## Vercel + Supabaseで非公開プレビューを作る手順
 
-## Vercelで非公開プレビューを作る手順
+本番公開前に、中身だけ確認したい場合の手順です。既存のSupabaseプロジェクトを
+共用データベースとして使い、専用スキーマで分離する前提です。
 
-本番公開前に、中身だけ確認したい場合の手順です。
-
-1. [vercel.com](https://vercel.com) にログインし、「Add New」→「Project」から
-   GitHubリポジトリ `sansanbo1117-hue/aoyama-clinic-site` をインポートする。
-2. インポート画面（またはプロジェクト作成後の Storage タブ）で **Postgres** を追加する
-   （Neon連携。無料枠でOK）。追加すると `DATABASE_URL` が自動的に環境変数へ設定される。
-3. プロジェクトの **Settings → Environment Variables** に以下を追加する。
+1. Supabaseダッシュボードで対象プロジェクトを開き、**SQL Editor** で以下を実行してスキーマを作成する。
+   ```sql
+   create schema if not exists aoyama_clinic;
+   ```
+2. **Project Settings → Database → Connection string** から接続文字列を2種類コピーする。
+   - **Transaction pooler**（6543番ポート）→ `DATABASE_URL` 用
+   - **Direct connection**（5432番ポート）→ `DIRECT_URL` 用
+   - どちらも末尾に `&schema=aoyama_clinic` を追加する。
+3. [vercel.com](https://vercel.com) で「Add New」→「Project」から
+   GitHubリポジトリ `sansanbo1117-hue/aoyama-clinic-site` をインポートする
+   （すでにインポート済みなら **Settings → Environment Variables** を開く）。
+4. 環境変数に以下を追加する。
+   - `DATABASE_URL` … 手順2でコピーしたプール接続文字列
+   - `DIRECT_URL` … 手順2でコピーした直接接続文字列
    - `ADMIN_PASSWORD` … 管理画面ログイン用の任意のパスワード
    - `SESSION_SECRET` … 任意のランダム文字列（例: `openssl rand -hex 32` の出力）
-4. Deploy を実行する。ビルド時に `prisma migrate deploy` が自動実行され、テーブルが作成される。
-5. デプロイ完了後に発行される `https://xxxxx.vercel.app` のURL（Preview/Production問わず）は
+5. **Deployments** タブから最新のデプロイを開き「Redeploy」する。ビルド時に
+   `prisma migrate deploy` が自動実行され、`aoyama_clinic` スキーマ内にテーブルが作成される。
+6. デプロイ完了後に発行される `https://xxxxx.vercel.app` のURL（Preview/Production問わず）は
    検索エンジンには表示されませんが、URLを知っていれば誰でも閲覧できる状態です。
    本当に外部から見られたくない場合は、Vercelの「Deployment Protection」機能
    （Settings → Deployment Protection）でパスワード保護を有効にしてください（Hobbyプランでも設定可）。
-6. 初回アクセス時は `/admin/news` にお知らせが1件も無い状態なので、必要であれば
-   ローカルから `npm run db:seed`（`DATABASE_URL` を本番の接続文字列に向けて実行）で
+7. 初回アクセス時は `/admin/news` にお知らせが1件も無い状態なので、必要であれば
+   ローカルから `npm run db:seed`（`.env` を本番のSupabase接続文字列に向けて実行）で
    初期データを投入するか、管理画面から手動で追加してください。
 
 ## 本番公開時に必ず行うこと

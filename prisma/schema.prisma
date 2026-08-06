@@ -1,6 +1,12 @@
 // Vercel等サーバーレス環境はファイルシステムが永続化されないため、
-// Postgresを使用します。DATABASE_URL には Postgres の接続文字列を
-// 設定してください（Vercel Storage の Neon連携等で自動設定可能）。
+// Postgresを使用します。
+//
+// Supabase等、接続プーラー(PgBouncer)経由での接続を推奨する環境では、
+// DATABASE_URL に「プール接続文字列」、DIRECT_URL に「直接接続文字列」
+// を設定してください（マイグレーションはプール接続だと失敗する場合が
+// あるため、directUrl 経由で直接接続を使います）。
+// 他アプリと同じPostgresインスタンスを共有する場合は、接続文字列の末尾に
+// `?schema=専用スキーマ名` を付けてスキーマを分離してください。
 
 generator client {
   provider = "prisma-client-js"
@@ -8,8 +14,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // Web予約（初診・再診・予約変更・キャンセル）
