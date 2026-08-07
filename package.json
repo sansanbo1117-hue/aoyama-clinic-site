@@ -9,6 +9,7 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:demo": "tsx prisma/demo-seed.ts",
     "db:studio": "prisma studio",
     "migrate:slots": "tsx scripts/migrate-slots-to-reception-hours.ts"
   },

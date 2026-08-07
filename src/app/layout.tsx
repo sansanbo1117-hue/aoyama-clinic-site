@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { DemoBanner } from "@/components/demo-banner";
 import { CLINIC } from "@/lib/clinic-info";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
@@ -69,6 +70,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <DemoBanner />
         <a href="#main-content" className="skip-link">
           本文へスキップ
         </a>

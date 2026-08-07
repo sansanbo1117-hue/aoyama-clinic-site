@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, Mail, MapPin, Phone, Printer } from "lucide-react";
+import { ArrowUpRight, LockKeyhole, Mail, MapPin, Phone, Printer } from "lucide-react";
 
 import { CLINIC, FOOTER_LINKS } from "@/lib/clinic-info";
 
@@ -33,7 +33,17 @@ export function SiteFooter() {
       </div>
       <div className="site-container footer-bottom">
         <span>&copy; {CLINIC.legalName}</span>
-        <Link href="/privacy">プライバシーポリシー</Link>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <Link href="/privacy">プライバシーポリシー</Link>
+          <Link
+            href="/admin/login"
+            className="inline-flex items-center gap-1.5"
+            aria-label="医療機関スタッフ向け管理画面ログイン"
+          >
+            <LockKeyhole aria-hidden />
+            スタッフ入口
+          </Link>
+        </div>
       </div>
     </footer>
   );
