@@ -9,8 +9,8 @@ const prisma = new PrismaClient();
 async function main() {
   const service = await prisma.serviceType.upsert({
     where: { code: "demo-orthopedics" },
-    update: { name: "デモ診療予約", isActive: true },
-    create: { code: "demo-orthopedics", name: "デモ診療予約", bookingMode: "instant", bookingHorizonDays: 30, defaultDurationMinutes: 20, defaultCapacity: 2 },
+    update: { name: "デモ診療予約", isActive: true, defaultCapacity: 3 },
+    create: { code: "demo-orthopedics", name: "デモ診療予約", bookingMode: "instant", bookingHorizonDays: 30, defaultDurationMinutes: 20, defaultCapacity: 3 },
   });
 
   const start = new Date();
@@ -20,8 +20,8 @@ async function main() {
     const slotStart = new Date(start.getTime() + index * 30 * 60 * 1000);
     slots.push(await prisma.appointmentSlot.upsert({
       where: { serviceTypeId_startsAt: { serviceTypeId: service.id, startsAt: slotStart } },
-      update: { status: "open", capacity: 2 },
-      create: { serviceTypeId: service.id, startsAt: slotStart, endsAt: new Date(slotStart.getTime() + 20 * 60 * 1000), capacity: 2 },
+      update: { status: "open", capacity: 3 },
+      create: { serviceTypeId: service.id, startsAt: slotStart, endsAt: new Date(slotStart.getTime() + 20 * 60 * 1000), capacity: 3 },
     }));
   }
 

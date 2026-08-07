@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarCheck, Phone } from "lucide-react";
+import { CalendarCheck, ClipboardCheck, Phone } from "lucide-react";
 
 import { MobileNav } from "@/components/mobile-nav";
 import { CLINIC } from "@/lib/clinic-info";
@@ -40,6 +40,10 @@ export function SiteHeader() {
           </a>
           <Link href="/reserve" className="header-reserve">
             <CalendarCheck aria-hidden /><span>予約<br />リクエスト</span>
+          </Link>
+          <Link href="/appointments/manage" className="hidden text-xs font-bold text-primary underline-offset-4 hover:underline lg:block">
+            <ClipboardCheck className="mx-auto size-4" aria-hidden />
+            予約確認・取消
           </Link>
           <MobileNav />
         </div>
