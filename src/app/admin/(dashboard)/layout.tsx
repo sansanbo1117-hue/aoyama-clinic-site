@@ -14,16 +14,9 @@ export const metadata: Metadata = {
 };
 
 const links = [
-  { href: "/admin", label: "今日" },
-  { href: "/admin/patients", label: "患者" },
-  { href: "/admin/appointments/new", label: "電話予約" },
-  { href: "/admin/schedule", label: "診療枠管理" },
-  { href: "/admin/notifications", label: "通知センター" },
-  { href: "/admin/reservations", label: "予約依頼" },
-  { href: "/admin/news", label: "お知らせ管理" },
-  { href: "/admin/faq", label: "FAQ管理" },
-  { href: "/admin/contacts", label: "お問い合わせ" },
-  { href: "/admin/settings/notifications", label: "通知設定" },
+  { href: "/admin", label: "今日の受付" },
+  { href: "/admin/patients", label: "患者検索" },
+  { href: "/admin/more", label: "その他" },
 ];
 
 export default async function AdminLayout({
@@ -65,8 +58,8 @@ export default async function AdminLayout({
           {DEMO_NOTICE} 実患者情報は入力しないでください。
         </div>
       )}
-      <nav aria-label="スマホ用管理メニュー" className="admin-mobile-nav fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t bg-card/95 p-2 shadow-[0_-8px_30px_rgba(15,55,76,.12)] backdrop-blur sm:hidden">
-        {links.slice(0, 5).map((l) => <Link key={l.href} href={l.href} className="flex min-h-12 flex-col items-center justify-center rounded-lg px-1 text-[11px] font-bold text-muted-foreground hover:bg-secondary hover:text-primary">{l.label}</Link>)}
+      <nav aria-label="スマホ用管理メニュー" className="admin-mobile-nav fixed inset-x-0 bottom-0 z-50 grid grid-cols-3 border-t bg-card/95 p-2 shadow-[0_-8px_30px_rgba(15,55,76,.12)] backdrop-blur sm:hidden">
+        {links.map((l) => <Link key={l.href} href={l.href} className="flex min-h-12 flex-col items-center justify-center rounded-lg px-1 text-[11px] font-bold text-muted-foreground hover:bg-secondary hover:text-primary">{l.label}</Link>)}
       </nav>
     </div>
   );

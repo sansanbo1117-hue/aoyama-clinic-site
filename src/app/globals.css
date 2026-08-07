@@ -20,8 +20,8 @@
   --popover-foreground: #16241d;
 
   /* 深緑（読みやすさ最優先：白文字とのコントラスト比 7.7:1 / AAA） */
-  --primary: #0a5f3f;
-  --primary-hover: #073e29;
+  --primary: #267257;
+  --primary-hover: #1b5943;
   --primary-foreground: #ffffff;
 
   --secondary: #e6f2ea;

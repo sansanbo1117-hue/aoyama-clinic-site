@@ -45,6 +45,36 @@ function randomToken() {
   return crypto.randomBytes(32).toString("base64url");
 }
 
+function normalizePhone(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+function sameSecretValue(left: string, right: string) {
+  const leftHash = crypto.createHash("sha256").update(left).digest();
+  const rightHash = crypto.createHash("sha256").update(right).digest();
+  return crypto.timingSafeEqual(leftHash, rightHash);
+}
+
+export async function issueManageTokenByDetails(input: { appointmentCode: string; phone: string; birthDate: string }) {
+  const appointment = await prisma.appointment.findUnique({
+    where: { appointmentCode: input.appointmentCode.trim() },
+    include: { patient: true },
+  });
+  if (!appointment || appointment.status !== "confirmed") return null;
+  if (!sameSecretValue(normalizePhone(input.phone), normalizePhone(appointment.patient.phone))) return null;
+  if (!appointment.patient.birthDate || !sameSecretValue(input.birthDate, appointment.patient.birthDate)) return null;
+
+  const rawToken = randomToken();
+  await prisma.appointmentAccessToken.create({
+    data: {
+      appointmentId: appointment.id,
+      tokenHash: tokenHash(rawToken),
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+    },
+  });
+  return rawToken;
+}
+
 export function getJapanDate(date = new Date()) {
   return dateParts(date).date;
 }

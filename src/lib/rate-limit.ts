@@ -9,6 +9,7 @@ const LIMITS: Record<string, RateLimitConfig> = {
   "booking-hold": { windowMs: 10 * 60 * 1000, max: 10 },
   "booking-confirm": { windowMs: 10 * 60 * 1000, max: 5 },
   reschedule: { windowMs: 10 * 60 * 1000, max: 5 },
+  "appointment-lookup": { windowMs: 15 * 60 * 1000, max: 5 },
   "admin-login": { windowMs: 15 * 60 * 1000, max: 5 },
 };
 const DEFAULT_LIMIT: RateLimitConfig = { windowMs: 10 * 60 * 1000, max: 10 };

@@ -45,6 +45,14 @@ export const instantBookingSchema = z
 
 export type InstantBookingInput = z.infer<typeof instantBookingSchema>;
 
+export const appointmentLookupSchema = z.object({
+  appointmentCode: z.string().trim().min(1, "予約番号を入力してください。").max(80),
+  phone: z.string().trim().min(9, "電話番号を入力してください。").max(20).regex(/^[0-9()\-+ ]+$/, "電話番号の形式が正しくありません。"),
+  birthDate: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, "生年月日を入力してください。"),
+});
+
+export type AppointmentLookupInput = z.infer<typeof appointmentLookupSchema>;
+
 export const patientSchema = z.object({
   id: z.string().optional(),
   name: z.string().trim().min(1, "お名前を入力してください。").max(100),

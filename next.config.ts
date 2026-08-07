@@ -8,7 +8,7 @@ const CSP = [
   "img-src 'self' data:",
   "frame-src https://www.google.com",
   "style-src 'self' 'unsafe-inline'",
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline'${process.env.VERCEL_ENV === "preview" ? " https://vercel.live" : ""}`,
   "connect-src 'self'",
   "font-src 'self'",
   "object-src 'none'",
