@@ -6,7 +6,10 @@ import { updateReservationStatus } from "@/lib/actions/reservation";
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "未対応",
+  in_review: "確認中",
+  awaiting_patient: "患者連絡待ち",
   confirmed: "確定",
+  declined: "受付不可",
   cancelled: "キャンセル",
   done: "対応済み",
 };
@@ -29,7 +32,10 @@ export function ReservationStatusSelect({
       onChange={(e) => {
         const next = e.target.value as
           | "pending"
+          | "in_review"
+          | "awaiting_patient"
           | "confirmed"
+          | "declined"
           | "cancelled"
           | "done";
         startTransition(() => {

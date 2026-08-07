@@ -21,22 +21,39 @@ datasource db {
 
 // Web予約（初診・再診・予約変更・キャンセル）
 model Reservation {
-  id          String   @id @default(cuid())
-  type        String // initial | followup | change | cancel
-  name        String
-  nameKana    String?
-  phone       String
-  email       String?
-  birthDate   String?
-  desiredDate String
-  desiredTime String // am | pm_early | pm_late
-  symptom     String?
-  notes       String?
-  status      String   @default("pending") // pending | confirmed | cancelled | done
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                          String   @id @default(cuid())
+  requestCode                 String   @unique @default(cuid())
+  type                        String // initial | followup | change | cancel
+  name                        String
+  nameKana                    String?
+  phone                       String
+  email                       String?
+  birthDate                   String?
+  patientCardNumberEncrypted  String?
+  patientCardNumberLookupHash String?
+  patientCardNumberLast4      String?
+  desiredDate                 String
+  desiredTime                 String // am | pm_early | pm_late
+  symptom                     String?
+  notes                       String?
+  status                      String   @default("pending") // pending | in_review | awaiting_patient | confirmed | declined | cancelled | done
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
 
   @@index([status])
+  @@index([createdAt])
+}
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  actorType  String
+  action     String
+  entityType String
+  entityId   String?
+  metadata   String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
   @@index([createdAt])
 }
 
@@ -48,21 +65,308 @@ model NewsPost {
   category    String // general | closure | hours_change | obon | year_end
   isPublished Boolean  @default(true)
   publishedAt DateTime @default(now())
+  publishUntil DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([isPublished, publishedAt])
 }
 
+// FAQ（病院側で更新できる構造化コンテンツ）
+model FaqEntry {
+  id          String   @id @default(cuid())
+  question    String
+  answer      String
+  category    String   @default("general")
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, sortOrder])
+}
+
 // お問い合わせフォーム
 model ContactMessage {
-  id        String   @id @default(cuid())
-  name      String
-  phone     String?
-  email     String?
-  message   String
-  status    String   @default("new") // new | read | handled
-  createdAt DateTime @default(now())
+  id                String                  @id @default(cuid())
+  name              String
+  phone             String?
+  email             String?
+  message           String
+  status            String                  @default("new") // new | read | waiting_patient | handled | dismissed
+  priority          String                  @default("normal") // low | normal | high
+  assignedTo        String?
+  dueAt             DateTime?
+  internalNote      String?
+  responseChannel   String?
+  responseSummary   String?
+  firstRespondedAt  DateTime?
+  resolvedAt        DateTime?
+  lastNotifiedAt    DateTime?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  events            ContactEvent[]
+  notificationJobs  StaffNotificationJob[]
 
   @@index([status])
+  @@index([priority, dueAt])
+  @@index([createdAt])
+}
+
+model ContactEvent {
+  id               String         @id @default(cuid())
+  contactMessageId String
+  eventType        String         // created | viewed | called | emailed | waiting_patient | completed | dismissed | note
+  actorType        String         // patient | staff | system
+  detail           String?
+  createdAt        DateTime       @default(now())
+  contactMessage   ContactMessage @relation(fields: [contactMessageId], references: [id], onDelete: Cascade)
+
+  @@index([contactMessageId, createdAt])
+}
+
+model StaffNotificationSetting {
+  id                String   @id
+  destinationEmail  String?
+  enabled           Boolean  @default(true)
+  notificationTypes String   @default("contact,appointment_change,email_failed")
+  quietStart        String?
+  quietEnd          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model StaffNotificationJob {
+  id               String         @id @default(cuid())
+  contactMessageId String?
+  type             String         // contact | appointment_change | email_failed | task
+  dedupeKey        String         @unique
+  status           String         @default("pending") // pending | processing | sent | failed | skipped
+  attempts         Int            @default(0)
+  lastError        String?
+  sentAt           DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  contactMessage   ContactMessage? @relation(fields: [contactMessageId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([contactMessageId, status])
+}
+
+// 即時確定型の診療枠・予約
+model ServiceType {
+  id                    String             @id @default(cuid())
+  code                  String             @unique
+  name                  String
+  bookingMode           String             @default("instant") // instant | review | phone_only
+  defaultDurationMinutes Int               @default(20)
+  defaultCapacity       Int                @default(1)
+  bookingHorizonDays    Int                @default(30)
+  minLeadMinutes        Int                @default(60)
+  cancellationCutoffHours Int              @default(12)
+  isActive              Boolean            @default(true)
+  rules                 ScheduleRule[]
+  exceptions            ScheduleException[]
+  slots                 AppointmentSlot[]
+  appointments          Appointment[]
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+}
+
+model ScheduleRule {
+  id            String      @id @default(cuid())
+  serviceTypeId String
+  weekday       Int
+  startTime     String
+  endTime       String
+  slotMinutes   Int         @default(20)
+  capacity      Int         @default(1)
+  isActive      Boolean     @default(true)
+  serviceType   ServiceType @relation(fields: [serviceTypeId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([serviceTypeId, weekday, startTime, endTime])
+  @@index([serviceTypeId, weekday, isActive])
+}
+
+model ScheduleException {
+  id            String      @id @default(cuid())
+  serviceTypeId String?
+  date          String
+  startTime     String?
+  endTime       String?
+  kind          String      // closed | override
+  capacity      Int?
+  note          String?
+  isActive      Boolean     @default(true)
+  serviceType   ServiceType? @relation(fields: [serviceTypeId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([date, serviceTypeId, isActive])
+}
+
+model AppointmentSlot {
+  id            String        @id @default(cuid())
+  serviceTypeId String
+  startsAt      DateTime
+  endsAt        DateTime
+  capacity      Int           @default(1)
+  status        String        @default("open") // open | blocked | closed
+  serviceType   ServiceType   @relation(fields: [serviceTypeId], references: [id], onDelete: Cascade)
+  appointments  Appointment[]
+  holds         SlotHold[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@unique([serviceTypeId, startsAt])
+  @@index([startsAt, status])
+}
+
+model SlotHold {
+  id         String           @id @default(cuid())
+  slotId     String
+  tokenHash  String           @unique
+  clientKey  String?
+  expiresAt  DateTime
+  consumedAt DateTime?
+  slot       AppointmentSlot  @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  createdAt  DateTime         @default(now())
+
+  @@index([slotId, expiresAt])
+  @@index([clientKey, consumedAt, expiresAt])
+}
+
+model Patient {
+  id                          String        @id @default(cuid())
+  name                        String
+  nameKana                    String?
+  phone                       String
+  email                       String?
+  birthDate                   String?
+  patientCardNumberEncrypted  String?
+  patientCardNumberLookupHash String?
+  patientCardNumberLast4      String?
+  chartNumberEncrypted        String?
+  chartNumberLookupHash       String?
+  chartNumberLast4            String?
+  chartSystem                 String?
+  chartLinkStatus             String        @default("unlinked") // unlinked | linked | needs_review
+  chartVerifiedAt             DateTime?
+  chartVerifiedBy             String?
+  appointments                Appointment[]
+  receptionTasks              ReceptionTask[]
+  createdAt                   DateTime      @default(now())
+  updatedAt                   DateTime      @updatedAt
+
+  @@index([patientCardNumberLookupHash])
+  @@index([chartNumberLookupHash])
+  @@index([phone])
+  @@index([chartLinkStatus])
+}
+
+model Appointment {
+  id                String                   @id @default(cuid())
+  appointmentCode   String                   @unique @default(cuid())
+  patientId         String
+  serviceTypeId     String
+  slotId            String
+  visitType         String
+  status            String                   @default("confirmed") // confirmed | cancelled_by_patient | cancelled_by_clinic | checked_in | completed | no_show
+  source            String                   @default("web")
+  receptionStatus   String                   @default("booked") // booked | arrived | waiting | in_consultation | payment_waiting | completed
+  notes             String?
+  cancellationReason String?
+  confirmedAt       DateTime                 @default(now())
+  cancelledAt       DateTime?
+  checkedInAt       DateTime?
+  completedAt       DateTime?
+  patient           Patient                  @relation(fields: [patientId], references: [id])
+  serviceType       ServiceType              @relation(fields: [serviceTypeId], references: [id])
+  slot              AppointmentSlot          @relation(fields: [slotId], references: [id])
+  accessTokens      AppointmentAccessToken[]
+  notificationJobs  NotificationJob[]
+  events            AppointmentEvent[]
+  emailEvents       EmailEvent[]
+  receptionTasks    ReceptionTask[]
+
+  @@index([slotId, status])
+  @@index([patientId, confirmedAt])
+  @@index([status, confirmedAt])
+}
+
+model AppointmentAccessToken {
+  id            String      @id @default(cuid())
+  appointmentId String
+  tokenHash     String      @unique
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@index([appointmentId])
+}
+
+model AppointmentEvent {
+  id            String      @id @default(cuid())
+  appointmentId String
+  eventType     String
+  actorType     String
+  metadata      String?
+  createdAt     DateTime    @default(now())
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([appointmentId, createdAt])
+}
+
+model NotificationJob {
+  id                String       @id @default(cuid())
+  appointmentId     String?
+  type              String       // confirmation | cancellation | reminder | rescheduled
+  dedupeKey         String       @unique
+  scheduledFor      DateTime
+  status            String       @default("pending") // pending | processing | sent | failed | skipped
+  attempts          Int          @default(0)
+  providerMessageId String?
+  lastError         String?
+  sentAt            DateTime?
+  appointment       Appointment? @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([status, scheduledFor])
+}
+
+model EmailEvent {
+  id                String       @id @default(cuid())
+  providerEventId   String       @unique
+  appointmentId     String?
+  eventType         String
+  rawPayload        String?
+  receivedAt        DateTime     @default(now())
+  appointment       Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@index([appointmentId, eventType])
+}
+
+model ReceptionTask {
+  id            String       @id @default(cuid())
+  type          String       // email_failed | chart_link | duplicate_patient | callback | same_day_change
+  status        String       @default("open") // open | done | dismissed
+  priority      String       @default("normal") // low | normal | high
+  appointmentId String?
+  patientId     String?
+  title         String
+  detail        String?
+  dueAt         DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  patient       Patient?     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([status, priority, dueAt])
+  @@index([patientId, status])
+  @@index([appointmentId, status])
 }

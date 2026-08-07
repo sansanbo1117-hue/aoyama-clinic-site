@@ -44,6 +44,7 @@ export default async function AdminNewsPage() {
                   {n.isPublished ? "公開中" : "非公開"}
                 </Badge>
                 <span className="font-semibold">{n.title}</span>
+                {n.publishUntil && <span className="text-xs text-muted-foreground">〜{n.publishUntil.toLocaleString("ja-JP")}</span>}
                 <div className="ml-auto">
                   <NewsRowActions id={n.id} isPublished={n.isPublished} />
                 </div>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHero } from "@/components/page-hero";
 import { CLINIC } from "@/lib/clinic-info";
 
 export const metadata: Metadata = {
@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
-      <PageHeader title="プライバシーポリシー" />
-
+    <>
+      <PageHero eyebrow="PRIVACY POLICY" title="プライバシーポリシー" />
+      <div className="mx-auto max-w-3xl px-4 pb-16 pt-10">
       <div className="mt-8 flex flex-col gap-6 leading-relaxed">
         <p>
           医療法人青山整形外科クリニック（以下「当クリニック」）は、患者さまからお預かりした個人情報の保護が重要であると認識しており、関係法令を遵守し、個人情報を適切に取り扱います。
@@ -69,6 +69,7 @@ export default function PrivacyPage() {
           </p>
         </section>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -2,7 +2,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 
 import { CLINIC } from "@/lib/clinic-info";
-import { PageHeader } from "@/components/page-header";
+import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
   title: "医院紹介",
@@ -34,9 +34,9 @@ const overviewPhotos = [
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12">
-      <PageHeader title="医院紹介" description="青山整形外科クリニックについて" />
-
+    <>
+      <PageHero eyebrow="ABOUT" title="医院紹介" description="青山整形外科クリニックについて" />
+      <div className="mx-auto max-w-6xl px-4 pb-16 pt-10">
       <section className="mt-8">
         <h2 className="text-xl font-bold text-primary">医院全景</h2>
         <div className="mt-4 grid gap-5 sm:grid-cols-2">
@@ -84,6 +84,7 @@ export default function AboutPage() {
           </table>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

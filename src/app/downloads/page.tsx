@@ -2,7 +2,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { FileText } from "lucide-react";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
   title: "ダウンロード",
@@ -29,9 +29,9 @@ const files = [
 
 export default function DownloadsPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
-      <PageHeader title="ダウンロード" />
-
+    <>
+      <PageHero eyebrow="DOWNLOADS" title="ダウンロード" />
+      <div className="mx-auto max-w-3xl px-4 pb-16 pt-10">
       <ul className="mt-8 flex flex-col gap-3">
         {files.map((f) => (
           <li key={f.href}>
@@ -75,6 +75,7 @@ export default function DownloadsPage() {
           未成年のスポーツ障害は早期発見・早期治療が大切です。上記シートで気になる項目があれば、お早めにご相談ください。
         </p>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

@@ -2,17 +2,30 @@ import { prisma } from "@/lib/prisma";
 import { RESERVATION_TYPES, DESIRED_TIME_OPTIONS } from "@/lib/validations";
 import { ReservationStatusSelect } from "@/components/admin/reservation-status-select";
 import { Badge } from "@/components/ui/badge";
+import { formatSlotTime } from "@/lib/booking";
 
 export default async function AdminReservationsPage() {
-  const reservations = await prisma.reservation.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  const [appointments, reservations] = await Promise.all([
+    prisma.appointment.findMany({
+      where: { status: { in: ["confirmed", "checked_in"] } },
+      include: { patient: true, slot: true },
+      orderBy: { slot: { startsAt: "asc" } },
+      take: 100,
+    }),
+    prisma.reservation.findMany({ orderBy: { createdAt: "desc" } }),
+  ]);
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-primary">Web予約一覧</h1>
+      <h1 className="text-xl font-bold text-primary">予約管理</h1>
+      <section className="mt-5 rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+        <h2 className="font-bold">確定済みWeb予約</h2>
+        <p className="mt-1 text-sm text-muted-foreground">患者が空き枠から選んで確定した予約です。診療枠の在庫は「診療枠管理」で調整できます。</p>
+        {appointments.length === 0 ? <p className="mt-4 text-sm text-muted-foreground">確定済みのWeb予約はありません。</p> : <div className="mt-4 divide-y">{appointments.map((appointment) => <div key={appointment.id} className="grid gap-2 py-4 text-sm sm:grid-cols-[1fr_auto] sm:items-center"><div><p className="font-bold">{appointment.slot.startsAt.toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" })} {formatSlotTime(appointment.slot.startsAt)}　{appointment.patient.name} 様</p><p className="mt-1 text-muted-foreground">{appointment.visitType === "initial" ? "初診" : "再診"}　／　予約番号 {appointment.appointmentCode}　／　{appointment.patient.phone}</p></div><Badge>{appointment.status === "checked_in" ? "来院済み" : "確定"}</Badge></div>)}</div>}
+      </section>
+      <h2 className="mt-10 text-xl font-bold text-primary">予約リクエスト受信箱</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        新しい予約リクエストが上に表示されます。対応状況を更新できます。
+        新しい依頼が上に表示されます。日時の確定は、院内台帳との照合と患者への連絡後に行ってください。
       </p>
 
       {reservations.length === 0 ? (
@@ -30,6 +43,9 @@ export default async function AdminReservationsPage() {
                   <Badge>{type?.label ?? r.type}</Badge>
                   <span className="text-sm text-muted-foreground">
                     受付：{r.createdAt.toLocaleString("ja-JP")}
+                  </span>
+                  <span className="rounded-full bg-secondary px-2 py-1 text-xs font-semibold text-secondary-foreground">
+                    {r.requestCode}
                   </span>
                   <div className="ml-auto">
                     <ReservationStatusSelect id={r.id} status={r.status} />
@@ -52,6 +68,12 @@ export default async function AdminReservationsPage() {
                       </a>
                     </dd>
                   </div>
+                  {r.patientCardNumberLast4 && (
+                    <div className="flex gap-2">
+                      <dt className="font-semibold text-muted-foreground">診察券</dt>
+                      <dd>••••{r.patientCardNumberLast4}</dd>
+                    </div>
+                  )}
                   {r.email && (
                     <div className="flex gap-2">
                       <dt className="font-semibold text-muted-foreground">メール</dt>

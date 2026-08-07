@@ -1,21 +1,24 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Bone,
   Activity,
-  HeartPulse,
-  ShieldCheck,
-  Users,
-  Car,
+  ArrowDown,
   ArrowRight,
+  Bone,
+  Car,
+  Check,
+  Clock3,
+  HeartPulse,
+  MapPin,
+  Phone,
+  ShieldCheck,
 } from "lucide-react";
 
 import { QuickActions } from "@/components/quick-actions";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { CLINIC, HOME_RECEPTION_SUMMARY, MAP_EMBED_URL } from "@/lib/clinic-info";
 import { prisma } from "@/lib/prisma";
-import { CLINIC, MAP_EMBED_URL } from "@/lib/clinic-info";
 import { NEWS_CATEGORIES } from "@/lib/validations";
 
 export const revalidate = 60;
@@ -34,37 +37,28 @@ async function getLatestNews() {
 
 const departments = [
   {
+    number: "01",
     icon: Bone,
     title: "一般整形外科",
-    desc: "骨折・捻挫などの外傷から、関節疾患・リウマチまで運動器全般を診療します。",
+    english: "ORTHOPAEDICS",
+    desc: "首・肩・腰・膝の痛み、骨折、捻挫、しびれなど、運動器の症状を幅広く診療します。",
+    tags: ["関節の痛み", "外傷", "骨粗しょう症"],
   },
   {
+    number: "02",
     icon: Activity,
     title: "スポーツ整形外科",
-    desc: "日体協公認スポーツドクターの院長のもと、スポーツ外傷・障害の予防から競技復帰まで対応。",
+    english: "SPORTS MEDICINE",
+    desc: "スポーツ障害の診断から治療、再発予防、段階的な競技復帰まで一貫して支えます。",
+    tags: ["スポーツ外傷", "競技復帰", "再発予防"],
   },
   {
+    number: "03",
     icon: HeartPulse,
-    title: "リハビリテーション科",
-    desc: "理学療法士・鍼灸マッサージ師による、競技復帰や日常生活動作の回復をサポート。",
-  },
-] as const;
-
-const features = [
-  {
-    icon: ShieldCheck,
-    title: "日本整形外科学会専門医",
-    desc: "院長は日本整形外科学会専門医・日本整形外科認定スポーツ医の資格を持ち、専門的な診療を行います。",
-  },
-  {
-    icon: Users,
-    title: "スポーツ医学に強い体制",
-    desc: "九州サッカー協会・別府市サッカー協会の医学委員会委員長を務め、多数の競技団体のメディカルサポート実績があります。",
-  },
-  {
-    icon: Car,
-    title: "駐車場19台完備",
-    desc: "院内駐車場19台に加え、隣接の「愛の里」駐車場にも8台駐車可能。お車での通院も安心です。",
+    title: "リハビリテーション",
+    english: "REHABILITATION",
+    desc: "理学療法士などの専門スタッフが、日常動作とパフォーマンスの回復を支援します。",
+    tags: ["運動療法", "物理療法", "機能回復"],
   },
 ] as const;
 
@@ -73,180 +67,291 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary to-primary/80 pb-16 pt-12 text-primary-foreground sm:pb-20 sm:pt-16">
-        <div className="mx-auto max-w-6xl px-4">
-          <Badge variant="secondary" className="mb-4">
-            大分県別府市の整形外科
-          </Badge>
-          <h1 className="max-w-2xl text-3xl leading-snug font-bold sm:text-4xl">
-            {CLINIC.name}
-          </h1>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-primary-foreground/90 sm:text-lg">
-            一般整形外科からスポーツ整形外科、リハビリテーションまで。
-            日本整形外科学会専門医が診療にあたります。
-            初診・お久しぶりの方はお電話またはWeb予約でご連絡ください。
+      <section className="hero-shell">
+        <div className="hero-copy">
+          <p className="eyebrow text-white/70">
+            AOYAMA ORTHOPAEDIC CLINIC · BEPPU
           </p>
+          <h1>
+            痛みの先に、
+            <br />
+            <span>もう一度動ける日常を。</span>
+          </h1>
+          <p className="hero-lead">
+            地域の整形外科として、スポーツ医学の専門性を活かし、
+            診断からリハビリ、再発予防まで伴走します。
+          </p>
+          <div className="hero-links">
+            <Button asChild size="lg" className="rounded-none bg-accent text-accent-foreground shadow-none hover:bg-accent/90">
+              <Link href="/reserve">
+                Web予約 <ArrowRight aria-hidden />
+              </Link>
+            </Button>
+            <Link href="/medical" className="hero-text-link">
+              診療内容を見る <ArrowRight className="size-4" aria-hidden />
+            </Link>
+          </div>
         </div>
+
+        <div className="hero-visual" aria-label="青山整形外科クリニックの院内と外観">
+          <div className="hero-photo-main">
+            <Image
+              src="/images/rehab-room.jpg"
+              alt="リハビリテーション室での診療風景"
+              fill
+              priority
+              sizes="(max-width: 900px) 100vw, 58vw"
+              className="object-cover"
+            />
+          </div>
+          <div className="hero-photo-sub">
+            <Image
+              src="/images/outpatient-building.jpg"
+              alt="青山整形外科クリニック外観"
+              fill
+              priority
+              sizes="(max-width: 900px) 48vw, 22vw"
+              className="object-cover"
+            />
+          </div>
+          <div className="hero-photo-detail">
+            <Image
+              src="/images/entrance.jpg"
+              alt="緑に囲まれた医院入口"
+              fill
+              sizes="(max-width: 900px) 48vw, 18vw"
+              className="object-cover"
+            />
+          </div>
+          <div className="hero-watermark" aria-hidden>
+            AOYAMA
+          </div>
+        </div>
+
+        <div className="reception-panel">
+          <div className="reception-heading">
+            <span className="reception-icon"><Clock3 aria-hidden /></span>
+            <div>
+              <p className="eyebrow">RECEPTION HOURS</p>
+              <h2>受付時間のご案内</h2>
+            </div>
+          </div>
+          <dl className="reception-grid">
+            <div>
+              <dt>午前受付</dt>
+              <dd>〜{HOME_RECEPTION_SUMMARY.am.receptionUntil}</dd>
+            </div>
+            <div>
+              <dt>午後受付</dt>
+              <dd>〜{HOME_RECEPTION_SUMMARY.pm.receptionUntil}</dd>
+            </div>
+          </dl>
+          <p className="reception-note">
+            診療時間 {HOME_RECEPTION_SUMMARY.am.hours}・{HOME_RECEPTION_SUMMARY.pm.hours}（月・火・金）
+            ／ 水曜午後は{HOME_RECEPTION_SUMMARY.wedPm} ／ 木・土曜は午前のみ
+          </p>
+          <div className="reception-actions">
+            <a href={CLINIC.telHref}>
+              <Phone className="size-4" aria-hidden /> {CLINIC.tel}
+            </a>
+            <Link href="/hours">
+              詳細 <ArrowRight className="size-4" aria-hidden />
+            </Link>
+          </div>
+        </div>
+
+        <a className="hero-scroll" href="#care">
+          <span>SCROLL</span><ArrowDown className="size-4" aria-hidden />
+        </a>
       </section>
 
       <QuickActions />
 
-      {/* 診療案内 */}
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <div className="mb-8 flex items-end justify-between gap-4">
-          <h2 className="text-2xl font-bold text-primary sm:text-3xl">診療案内</h2>
-          <Link
-            href="/medical"
-            className="hidden shrink-0 items-center gap-1 font-semibold text-primary hover:underline sm:flex"
-          >
-            詳しく見る <ArrowRight className="size-4" aria-hidden />
-          </Link>
+      <section id="care" className="care-intro section-pad">
+        <div className="site-container care-intro-grid">
+          <div>
+            <p className="eyebrow text-primary">OUR CARE</p>
+            <h2 className="display-heading">
+              いまの痛みだけでなく、
+              <br />
+              <span>その先の生活</span>を診る。
+            </h2>
+          </div>
+          <div className="care-intro-copy">
+            <p>
+              病名をつけて終わりではありません。患者さまが「何に困っているか」を丁寧に伺い、
+              検査・治療・リハビリをつなぎ、できることを取り戻す道筋を一緒につくります。
+            </p>
+            <ul>
+              <li><Check aria-hidden /> 日本整形外科学会専門医による診療</li>
+              <li><Check aria-hidden /> スポーツ現場で培った復帰支援</li>
+              <li><Check aria-hidden /> 院内で検査からリハビリまで連携</li>
+            </ul>
+          </div>
         </div>
-        <div className="grid gap-5 sm:grid-cols-3">
-          {departments.map((d) => (
-            <Card key={d.title}>
-              <CardContent className="flex flex-col items-start gap-3 pt-5">
-                <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-primary">
-                  <d.icon className="size-6" aria-hidden />
-                </span>
-                <h3 className="text-lg font-bold">{d.title}</h3>
-                <p className="text-sm text-muted-foreground">{d.desc}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        <Link
-          href="/medical"
-          className="mt-6 flex items-center gap-1 font-semibold text-primary hover:underline sm:hidden"
-        >
-          診療案内を詳しく見る <ArrowRight className="size-4" aria-hidden />
-        </Link>
       </section>
 
-      {/* 医院の特徴 */}
-      <section className="bg-secondary/30 py-16">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="mb-8 text-2xl font-bold text-primary sm:text-3xl">
-            医院の特徴
-          </h2>
-          <div className="grid gap-5 sm:grid-cols-3">
-            {features.map((f) => (
-              <div key={f.title} className="flex flex-col items-start gap-3">
-                <span className="flex size-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                  <f.icon className="size-6" aria-hidden />
+      <section className="departments-section section-pad">
+        <div className="site-container">
+          <div className="section-title-row">
+            <div>
+              <p className="eyebrow text-primary">MEDICAL SERVICES</p>
+              <h2 className="section-heading">診療内容</h2>
+            </div>
+            <Link href="/medical" className="arrow-link">
+              すべての診療内容 <ArrowRight aria-hidden />
+            </Link>
+          </div>
+
+          <div className="department-list">
+            {departments.map((department) => (
+              <Link href="/medical" className="department-row" key={department.number}>
+                <span className="department-number">{department.number}</span>
+                <span className="department-icon"><department.icon aria-hidden /></span>
+                <span className="department-name">
+                  <small>{department.english}</small>
+                  <strong>{department.title}</strong>
                 </span>
-                <h3 className="text-lg font-bold">{f.title}</h3>
-                <p className="text-sm text-muted-foreground">{f.desc}</p>
-              </div>
+                <span className="department-copy">{department.desc}</span>
+                <span className="department-tags">
+                  {department.tags.map((tag) => <em key={tag}>{tag}</em>)}
+                </span>
+                <span className="department-arrow"><ArrowRight aria-hidden /></span>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 院長紹介 */}
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="mb-8 text-2xl font-bold text-primary sm:text-3xl">院長紹介</h2>
-        <div className="flex flex-col gap-6 rounded-2xl border bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:p-8">
-          <Image
-            src="/images/dr-uchida.jpg"
-            alt="院長　内田六郎"
-            width={384}
-            height={288}
-            className="mx-auto w-40 shrink-0 rounded-xl object-cover sm:mx-0 sm:w-48"
-          />
-          <div>
-            <p className="text-xl font-bold">院長　内田　六郎</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              整形外科医／日本整形外科学会専門医／日本整形外科認定スポーツ医
-            </p>
-            <p className="mt-4 text-sm leading-relaxed sm:text-base">
-              九州サッカー協会・別府市サッカー協会の医学委員会委員長を務め、
-              数多くのプロスポーツ大会で会場ドクターを担当してきました。
-              「地域のみなさまが、痛みを我慢せず早めに相談できるクリニック」を目指しています。
-            </p>
-            <Link
-              href="/doctor"
-              className="mt-4 inline-flex items-center gap-1 font-semibold text-primary hover:underline"
-            >
-              院長・スタッフ紹介を見る <ArrowRight className="size-4" aria-hidden />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* お知らせ */}
-      <section className="bg-secondary/30 py-16">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="mb-8 flex items-end justify-between gap-4">
-            <h2 className="text-2xl font-bold text-primary sm:text-3xl">お知らせ</h2>
-            <Link
-              href="/news"
-              className="flex shrink-0 items-center gap-1 font-semibold text-primary hover:underline"
-            >
-              一覧を見る <ArrowRight className="size-4" aria-hidden />
-            </Link>
-          </div>
-
-          {news.length === 0 ? (
-            <p className="rounded-xl border bg-card p-6 text-muted-foreground">
-              現在、新しいお知らせはありません。
-            </p>
-          ) : (
-            <ul className="flex flex-col gap-3">
-              {news.map((n) => {
-                const cat = NEWS_CATEGORIES.find((c) => c.value === n.category);
-                return (
-                  <li key={n.id}>
-                    <Link
-                      href={`/news/${n.id}`}
-                      className="flex flex-col gap-2 rounded-xl border bg-card p-4 hover:border-primary sm:flex-row sm:items-center sm:gap-4"
-                    >
-                      <time
-                        dateTime={n.publishedAt.toISOString()}
-                        className="shrink-0 text-sm text-muted-foreground"
-                      >
-                        {n.publishedAt.toLocaleDateString("ja-JP")}
-                      </time>
-                      {cat && <Badge variant="secondary">{cat.label}</Badge>}
-                      <span className="font-semibold">{n.title}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      </section>
-
-      {/* アクセス */}
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="mb-8 text-2xl font-bold text-primary sm:text-3xl">アクセス</h2>
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="overflow-hidden rounded-xl border shadow-sm">
-            <iframe
-              title="青山整形外科クリニック 地図"
-              src={MAP_EMBED_URL}
-              className="h-80 w-full"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
+      <section className="rehab-feature section-pad">
+        <div className="site-container rehab-grid">
+          <div className="rehab-image-wrap">
+            <Image
+              src="/images/rehab-room.jpg"
+              alt="広いリハビリテーション室"
+              fill
+              sizes="(max-width: 900px) 100vw, 55vw"
+              className="object-cover"
             />
+            <p aria-hidden><span>SPORTS</span><span>MEDICINE</span></p>
           </div>
-          <div className="flex flex-col justify-center gap-4">
-            <p className="text-lg font-bold">{CLINIC.fullAddress}</p>
-            <p className="text-muted-foreground">
-              院内駐車場19台分に加え、海側隣接の「愛の里」駐車場にも8台駐車いただけます。
+          <div className="rehab-copy">
+            <p className="eyebrow text-accent">FROM PAIN TO PERFORMANCE</p>
+            <h2>治すだけでなく、<br />戻るところまで。</h2>
+            <p>
+              日常生活への復帰も、競技への復帰も、目標は一人ひとり違います。
+              医師とリハビリスタッフが状態を共有し、無理のない回復計画を組み立てます。
             </p>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link href="/access">
-                  アクセス詳細を見る <ArrowRight className="size-4" aria-hidden />
-                </Link>
-              </Button>
-              <Button asChild variant="outline">
-                <a href={CLINIC.telHref}>{CLINIC.tel}</a>
-              </Button>
+            <div className="feature-facts">
+              <div><ShieldCheck aria-hidden /><span>専門医による<br /><strong>的確な診断</strong></span></div>
+              <div><Activity aria-hidden /><span>段階に合わせた<br /><strong>復帰プラン</strong></span></div>
             </div>
+            <Link href="/medical" className="light-arrow-link">
+              スポーツ整形外科について <ArrowRight aria-hidden />
+            </Link>
           </div>
+        </div>
+      </section>
+
+      <section className="doctor-section section-pad">
+        <div className="site-container doctor-grid">
+          <div className="doctor-copy">
+            <p className="eyebrow text-primary">DOCTOR</p>
+            <h2 className="section-heading">地域の暮らしと、<br />スポーツを支える。</h2>
+            <blockquote>
+              「痛みを我慢する前に、気軽に相談できる場所でありたい」
+            </blockquote>
+            <p>
+              整形外科専門医・認定スポーツ医として、地域診療とスポーツ現場の両方に携わってきました。
+              症状や生活背景を丁寧に伺い、納得できる治療をともに選びます。
+            </p>
+            <p className="doctor-name"><small>院長</small> 内田 六郎</p>
+            <Link href="/doctor" className="arrow-link">
+              院長・スタッフ紹介 <ArrowRight aria-hidden />
+            </Link>
+          </div>
+          <div className="doctor-portrait">
+            <Image
+              src="/images/dr-uchida.jpg"
+              alt="院長 内田六郎"
+              fill
+              sizes="(max-width: 900px) 90vw, 40vw"
+              className="object-cover object-top"
+            />
+            <span aria-hidden>R. UCHIDA</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="patient-info section-pad">
+        <div className="site-container">
+          <div className="section-title-row">
+            <div>
+              <p className="eyebrow text-primary">FOR PATIENTS</p>
+              <h2 className="section-heading">受診される方へ</h2>
+            </div>
+            <p className="section-description">迷わず受診できるよう、必要な情報をまとめています。</p>
+          </div>
+          <div className="patient-links">
+            <Link href="/reserve"><span>01</span><strong>Web予約</strong><small>初診・再診・変更</small><ArrowRight aria-hidden /></Link>
+            <Link href="/hours"><span>02</span><strong>診療・受付時間</strong><small>曜日別の時間</small><ArrowRight aria-hidden /></Link>
+            <Link href="/access"><span>03</span><strong>アクセス</strong><small>地図・駐車場</small><ArrowRight aria-hidden /></Link>
+            <Link href="/faq"><span>04</span><strong>よくある質問</strong><small>受診前の確認</small><ArrowRight aria-hidden /></Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="news-section section-pad">
+        <div className="site-container news-grid">
+          <div>
+            <p className="eyebrow text-primary">NEWS</p>
+            <h2 className="section-heading">お知らせ</h2>
+            <Link href="/news" className="arrow-link">
+              一覧を見る <ArrowRight aria-hidden />
+            </Link>
+          </div>
+          <div className="news-list">
+            {news.length === 0 ? (
+              <p className="news-empty">現在、新しいお知らせはありません。</p>
+            ) : (
+              news.map((item) => {
+                const category = NEWS_CATEGORIES.find((entry) => entry.value === item.category);
+                return (
+                  <Link href={`/news/${item.id}`} key={item.id}>
+                    <time dateTime={item.publishedAt.toISOString()}>
+                      {item.publishedAt.toLocaleDateString("ja-JP").replaceAll("/", ".")}
+                    </time>
+                    {category && <Badge variant="secondary">{category.label}</Badge>}
+                    <strong>{item.title}</strong>
+                    <ArrowRight aria-hidden />
+                  </Link>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="access-section">
+        <div className="access-map">
+          <iframe
+            title="青山整形外科クリニック 地図"
+            src={MAP_EMBED_URL}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
+        <div className="access-copy">
+          <p className="eyebrow text-accent">ACCESS</p>
+          <h2>通いやすさも、<br />治療の一部です。</h2>
+          <p className="access-address"><MapPin aria-hidden /> {CLINIC.fullAddress}</p>
+          <div className="access-facts">
+            <p><Car aria-hidden /><span><strong>駐車場 27台</strong><small>院内19台＋隣接8台</small></span></p>
+            <p><Clock3 aria-hidden /><span><strong>土曜も診療</strong><small>{HOME_RECEPTION_SUMMARY.satAm}</small></span></p>
+          </div>
+          <Button asChild variant="outline" className="rounded-none border-white bg-transparent text-white hover:bg-white hover:text-primary">
+            <Link href="/access">アクセス詳細 <ArrowRight aria-hidden /></Link>
+          </Button>
         </div>
       </section>
     </>

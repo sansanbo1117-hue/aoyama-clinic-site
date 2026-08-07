@@ -1,7 +1,9 @@
 import { cookies } from "next/headers";
 import crypto from "node:crypto";
 
-const COOKIE_NAME = "admin_session";
+// __Host- プレフィックスはSecure属性・Path=/・Domain未指定を強制するCookie名。
+// 本番(HTTPS)のみで使う。開発環境(http)で付けるとブラウザがCookieを拒否するため分ける。
+const COOKIE_NAME = process.env.NODE_ENV === "production" ? "__Host-admin_session" : "admin_session";
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12時間
 
 function getSecret(): string {
@@ -48,10 +50,11 @@ export function checkPassword(input: string): boolean {
   const expected = process.env.ADMIN_PASSWORD;
   if (!expected) return false;
 
-  const inputBuf = Buffer.from(input);
-  const expectedBuf = Buffer.from(expected);
-  if (inputBuf.length !== expectedBuf.length) return false;
-  return crypto.timingSafeEqual(inputBuf, expectedBuf);
+  // 生の長さで比較すると、早期returnの有無がタイミングからパスワード長を漏らす。
+  // 固定長のハッシュに変換してから比較することで、常に一定時間の比較になる。
+  const inputHash = crypto.createHash("sha256").update(input).digest();
+  const expectedHash = crypto.createHash("sha256").update(expected).digest();
+  return crypto.timingSafeEqual(inputHash, expectedHash);
 }
 
 export async function createSession(): Promise<void> {

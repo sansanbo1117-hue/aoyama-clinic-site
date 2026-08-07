@@ -28,6 +28,13 @@ function FieldError({ errors }: { errors?: string[] }) {
   );
 }
 
+function toDateTimeLocal(date: Date | null | undefined) {
+  if (!date) return "";
+  const parts = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(date);
+  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}T${value.hour}:${value.minute}`;
+}
+
 export function NewsForm({
   news,
 }: {
@@ -37,6 +44,7 @@ export function NewsForm({
     body: string;
     category: string;
     isPublished: boolean;
+    publishUntil: Date | null;
   };
 }) {
   const action = news ? updateNews.bind(null, news.id) : createNews;
@@ -62,6 +70,12 @@ export function NewsForm({
           className="mt-1.5"
         />
         <FieldError errors={state.errors?.title} />
+      </div>
+
+      <div>
+        <Label htmlFor="publishUntil">公開終了日時（任意）</Label>
+        <Input id="publishUntil" name="publishUntil" type="datetime-local" defaultValue={toDateTimeLocal(news?.publishUntil)} className="mt-1.5" />
+        <p className="mt-1 text-xs text-muted-foreground">休診・期間限定のお知らせは期限を設定すると自動的に非表示になります。</p>
       </div>
 
       <div>

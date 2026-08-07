@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 
 import { createContactMessage } from "@/lib/actions/contact";
@@ -71,6 +72,11 @@ export function ContactForm() {
         <FieldError errors={state.errors?.message} />
       </div>
 
+      <div className="absolute -left-[10000px] h-px w-px overflow-hidden" aria-hidden="true">
+        <label htmlFor="website">Website</label>
+        <input id="website" name="website" tabIndex={-1} autoComplete="off" />
+      </div>
+
       <Label htmlFor="consent" className="flex items-start gap-3 font-normal">
         <Checkbox id="consent" name="consent" required className="mt-0.5" />
         <span>
@@ -84,9 +90,9 @@ export function ContactForm() {
 
       <p className="text-sm text-muted-foreground">
         診療のご予約はこちらではなく
-        <a href="/reserve" className="font-semibold text-primary hover:underline">
+        <Link href="/reserve" className="font-semibold text-primary hover:underline">
           Web予約フォーム
-        </a>
+        </Link>
         をご利用ください。お急ぎの場合はお電話（{CLINIC.tel}）をご利用ください。
       </p>
 

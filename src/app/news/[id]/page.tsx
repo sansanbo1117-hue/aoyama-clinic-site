@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { NEWS_CATEGORIES } from "@/lib/validations";
 
 export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function NewsDetailPage({
   params,
@@ -16,7 +17,7 @@ export default async function NewsDetailPage({
   const { id } = await params;
   const news = await prisma.newsPost.findUnique({ where: { id } });
 
-  if (!news || !news.isPublished) {
+  if (!news || !news.isPublished || (news.publishUntil && news.publishUntil <= new Date())) {
     notFound();
   }
 

@@ -1,70 +1,39 @@
 import Link from "next/link";
-import { Phone, MapPin, Printer, Mail } from "lucide-react";
+import { ArrowUpRight, Mail, MapPin, Phone, Printer } from "lucide-react";
 
 import { CLINIC, FOOTER_LINKS } from "@/lib/clinic-info";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 border-t bg-secondary/30">
-      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-3">
-        <div>
-          <p className="text-lg font-bold text-primary">{CLINIC.name}</p>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden />
-              {CLINIC.fullAddress}
-            </li>
-            <li className="flex items-center gap-2">
-              <Phone className="size-4 shrink-0" aria-hidden />
-              <a href={CLINIC.telHref} className="hover:text-primary hover:underline">
-                {CLINIC.tel}
-              </a>
-            </li>
-            <li className="flex items-center gap-2">
-              <Printer className="size-4 shrink-0" aria-hidden />
-              FAX：{CLINIC.fax}
-            </li>
-            <li className="flex items-center gap-2">
-              <Mail className="size-4 shrink-0" aria-hidden />
-              <a
-                href={`mailto:${CLINIC.email}`}
-                className="hover:text-primary hover:underline"
-              >
-                {CLINIC.email}
-              </a>
-            </li>
-          </ul>
+    <footer className="site-footer">
+      <div className="site-container footer-top">
+        <div className="footer-brand">
+          <span className="brand-mark" aria-hidden>青</span>
+          <div><small>医療法人</small><strong>{CLINIC.name}</strong><em>AOYAMA ORTHOPAEDIC CLINIC</em></div>
         </div>
-
-        <nav aria-label="フッターナビゲーション">
-          <p className="text-sm font-bold text-foreground">サイトメニュー</p>
-          <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-muted-foreground">
-            {FOOTER_LINKS.map((link) => (
-              <li key={link.href}>
-                <Link href={link.href} className="hover:text-primary hover:underline">
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <p>痛みの先に、もう一度動ける日常を。</p>
+      </div>
+      <div className="site-container footer-grid">
+        <div className="footer-contact">
+          <p><MapPin aria-hidden /> {CLINIC.fullAddress}</p>
+          <p><Phone aria-hidden /> <a href={CLINIC.telHref}>{CLINIC.tel}</a></p>
+          <p><Printer aria-hidden /> FAX {CLINIC.fax}</p>
+          <p><Mail aria-hidden /> <a href={`mailto:${CLINIC.email}`}>{CLINIC.email}</a></p>
+          <Link href="/access">Google Maps / アクセス <ArrowUpRight aria-hidden /></Link>
+        </div>
+        <nav aria-label="フッターナビゲーション" className="footer-nav">
+          {FOOTER_LINKS.map((link) => <Link href={link.href} key={link.href}>{link.label}</Link>)}
         </nav>
-
-        <div>
-          <p className="text-sm font-bold text-foreground">お急ぎの方へ</p>
-          <p className="mt-4 text-sm text-muted-foreground">
-            初診・お久しぶりの方は事前のお電話予約をお願いしております。
-          </p>
-          <a
-            href={CLINIC.telHref}
-            className="mt-3 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-3 font-bold text-primary-foreground"
-          >
-            <Phone className="size-4" aria-hidden /> {CLINIC.tel}
-          </a>
+        <div className="footer-cta">
+          <small>初診・再診・予約変更</small>
+          <strong>受診前のご連絡はこちら</strong>
+          <Link href="/reserve">Web予約 <ArrowUpRight aria-hidden /></Link>
+          <a href={CLINIC.telHref}><Phone aria-hidden /> {CLINIC.tel}</a>
         </div>
       </div>
-
-      <div className="border-t py-4 text-center text-xs text-muted-foreground">
-        &copy; {CLINIC.legalName}
+      <div className="site-container footer-bottom">
+        <span>&copy; {CLINIC.legalName}</span>
+        <Link href="/privacy">プライバシーポリシー</Link>
       </div>
     </footer>
   );

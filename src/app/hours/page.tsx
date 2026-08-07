@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHero } from "@/components/page-hero";
 import { CLINIC, WEEKLY_HOURS, RECEPTION_HOURS } from "@/lib/clinic-info";
 
 export const metadata: Metadata = {
@@ -45,9 +45,9 @@ function HoursTable({
 
 export default function HoursPage() {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12">
-      <PageHeader title="診療時間・休診案内" />
-
+    <>
+      <PageHero eyebrow="HOURS" title="診療時間・休診案内" />
+      <div className="mx-auto max-w-3xl px-4 pb-16 pt-10">
       <section className="mt-8">
         <h2 className="text-xl font-bold text-primary">診療時間</h2>
         <div className="mt-4">
@@ -63,7 +63,11 @@ export default function HoursPage() {
         <div className="mt-4 flex flex-col gap-6">
           <HoursTable caption="新患受付" rows={RECEPTION_HOURS.newPatient} />
           <p className="rounded-lg bg-secondary/40 p-4 text-sm">
-            新患・お久しぶりの来院・別部位での診察をご希望の方は、すべて事前予約が必要です。お電話（
+            新患・お久しぶりの来院・別部位での診察をご希望の方は、すべて事前のご予約が必要です。
+            <Link href="/reserve" className="font-semibold text-primary hover:underline">
+              Web予約
+            </Link>
+            またはお電話（
             <a href={CLINIC.telHref} className="font-semibold text-primary hover:underline">
               {CLINIC.tel}
             </a>
@@ -92,6 +96,7 @@ export default function HoursPage() {
           ページまたはお電話でご確認ください。
         </p>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

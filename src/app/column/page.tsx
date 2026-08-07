@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
   title: "院長・スタッフだより",
@@ -50,9 +50,9 @@ const staffPosts = [
 
 export default function ColumnPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
-      <PageHeader title="院長・スタッフだより" />
-
+    <>
+      <PageHero eyebrow="COLUMN" title="院長・スタッフだより" />
+      <div className="mx-auto max-w-3xl px-4 pb-16 pt-10">
       <section className="mt-8">
         <h2 className="text-xl font-bold text-primary">院長の談話室</h2>
         <ul className="mt-4 flex flex-col gap-3">
@@ -78,6 +78,7 @@ export default function ColumnPage() {
           ))}
         </ul>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

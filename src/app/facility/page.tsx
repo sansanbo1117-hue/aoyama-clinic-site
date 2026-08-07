@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { Metadata } from "next";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
   title: "院内紹介",
@@ -30,9 +30,9 @@ const rooms = [
 
 export default function FacilityPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12">
-      <PageHeader title="院内紹介" description="安心して受診いただけるよう院内をご紹介します。" />
-
+    <>
+      <PageHero eyebrow="FACILITY" title="院内紹介" description="安心して受診いただけるよう院内をご紹介します。" />
+      <div className="mx-auto max-w-6xl px-4 pb-16 pt-10">
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {rooms.map((r) => (
           <figure
@@ -52,6 +52,7 @@ export default function FacilityPage() {
           </figure>
         ))}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

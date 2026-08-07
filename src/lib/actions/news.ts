@@ -37,6 +37,7 @@ export async function createNews(
       body: parsed.data.body,
       category: parsed.data.category,
       isPublished: parsed.data.isPublished === "on",
+      publishUntil: parsed.data.publishUntil ? new Date(parsed.data.publishUntil) : null,
     },
   });
 
@@ -70,6 +71,7 @@ export async function updateNews(
       body: parsed.data.body,
       category: parsed.data.category,
       isPublished: parsed.data.isPublished === "on",
+      publishUntil: parsed.data.publishUntil ? new Date(parsed.data.publishUntil) : null,
     },
   });
 

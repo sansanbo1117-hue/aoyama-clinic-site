@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { Metadata } from "next";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHero } from "@/components/page-hero";
 import { CLINIC, MAP_EMBED_URL, MAP_LINK_URL } from "@/lib/clinic-info";
 
 export const metadata: Metadata = {
@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 
 export default function AccessPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12">
-      <PageHeader title="アクセス" />
-
+    <>
+      <PageHero eyebrow="ACCESS" title="アクセス" />
+      <div className="mx-auto max-w-6xl px-4 pb-16 pt-10">
       <section className="mt-8 grid gap-6 lg:grid-cols-2">
         <div>
           <div className="overflow-hidden rounded-xl border shadow-sm">
@@ -89,6 +89,7 @@ export default function AccessPage() {
           </figure>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

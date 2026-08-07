@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { Metadata } from "next";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHero } from "@/components/page-hero";
 import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = {
@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 
 export default function DoctorPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12">
-      <PageHeader title="院長・スタッフ紹介" />
-
+    <>
+      <PageHero eyebrow="DOCTOR" title="院長・スタッフ紹介" />
+      <div className="mx-auto max-w-6xl px-4 pb-16 pt-10">
       <section className="mt-8 rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-6 sm:flex-row">
           <Image
@@ -138,6 +138,7 @@ export default function DoctorPage() {
           </li>
         </ul>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

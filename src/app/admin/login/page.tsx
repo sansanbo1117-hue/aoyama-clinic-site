@@ -20,6 +20,9 @@ export default async function AdminLoginPage() {
       <p className="mt-2 text-sm text-muted-foreground">
         お知らせ・予約・お問い合わせの管理はこちらからログインしてください。
       </p>
+      <p className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+        確認用のデモ管理画面です。実患者の情報は入力しないでください。
+      </p>
       <div className="mt-6">
         <LoginForm />
       </div>

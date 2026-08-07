@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHero } from "@/components/page-hero";
 import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
 import { NEWS_CATEGORIES } from "@/lib/validations";
@@ -12,17 +12,23 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function NewsListPage() {
-  const news = await prisma.newsPost.findMany({
-    where: { isPublished: true },
-    orderBy: { publishedAt: "desc" },
-  });
+  let news: Awaited<ReturnType<typeof prisma.newsPost.findMany>> = [];
+  try {
+    news = await prisma.newsPost.findMany({
+      where: { isPublished: true, OR: [{ publishUntil: null }, { publishUntil: { gt: new Date() } }] },
+      orderBy: { publishedAt: "desc" },
+    });
+  } catch {
+    news = [];
+  }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12">
-      <PageHeader title="お知らせ" />
-
+    <>
+      <PageHero eyebrow="NEWS" title="お知らせ" />
+      <div className="mx-auto max-w-3xl px-4 pb-16 pt-10">
       {news.length === 0 ? (
         <p className="mt-8 rounded-xl border bg-card p-6 text-muted-foreground">
           現在、お知らせはありません。
@@ -51,6 +57,7 @@ export default async function NewsListPage() {
           })}
         </ul>
       )}
-    </div>
+      </div>
+    </>
   );
 }

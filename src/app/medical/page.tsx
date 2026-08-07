@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHero } from "@/components/page-hero";
 import { FirstVisitFlow } from "@/components/first-visit-flow";
 import { CLINIC } from "@/lib/clinic-info";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,9 @@ export const metadata: Metadata = {
 
 export default function MedicalPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12">
-      <PageHeader title="診療案内" />
-
+    <>
+      <PageHero eyebrow="MEDICAL SERVICES" title="診療案内" />
+      <div className="mx-auto max-w-6xl px-4 pb-16 pt-10">
       <section className="mt-8">
         <h2 className="text-xl font-bold text-primary">診療科目</h2>
         <p className="mt-3 leading-relaxed">
@@ -35,7 +35,7 @@ export default function MedicalPage() {
         <div className="mt-5 flex flex-wrap gap-3">
           <Button asChild>
             <Link href="/reserve">
-              Web予約する <ArrowRight className="size-4" aria-hidden />
+              Web予約をする <ArrowRight className="size-4" aria-hidden />
             </Link>
           </Button>
           <Button asChild variant="outline">
@@ -110,6 +110,7 @@ export default function MedicalPage() {
           メディカルチェックシートのダウンロード <ArrowRight className="size-4" aria-hidden />
         </Link>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

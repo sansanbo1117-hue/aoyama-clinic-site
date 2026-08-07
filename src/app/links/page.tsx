@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
   title: "LINKS",
@@ -20,9 +20,9 @@ const links = [
 
 export default function LinksPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
-      <PageHeader title="LINKS" />
-
+    <>
+      <PageHero eyebrow="LINKS" title="LINKS" />
+      <div className="mx-auto max-w-3xl px-4 pb-16 pt-10">
       <ul className="mt-8 flex flex-col gap-3">
         {links.map((l) => (
           <li key={l.href}>
@@ -41,6 +41,7 @@ export default function LinksPage() {
       <p className="mt-6 rounded-lg bg-secondary/40 p-4 text-sm text-muted-foreground">
         リンク先の内容は各運営団体の情報に基づきます。URLが変更されている場合がありますので、あらかじめご了承ください。
       </p>
-    </div>
+      </div>
+    </>
   );
 }

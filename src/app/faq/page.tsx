@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
-import { PageHeader } from "@/components/page-header";
+import { PageHero } from "@/components/page-hero";
 import {
   Accordion,
   AccordionItem,
@@ -8,16 +9,17 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { CLINIC } from "@/lib/clinic-info";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "よくある質問",
   description: "青山整形外科クリニックへのよくある質問（予約・駐車場・診療時間など）。",
 };
 
-const faqs = [
+const defaultFaqs = [
   {
     q: "初診ですが、予約は必要ですか？",
-    a: "はい。新患の方、お久しぶりの来院、別部位での診察をご希望の方は、すべて事前予約が必要です。お電話またはWeb予約フォームからご予約のうえご来院ください。",
+    a: "はい。新患の方、お久しぶりの来院、別部位での診察をご希望の方は、すべて事前のご予約が必要です。お電話またはWeb予約からご連絡ください。",
   },
   {
     q: "木曜日は診療していますか？",
@@ -53,11 +55,21 @@ const faqs = [
   },
 ];
 
-export default function FaqPage() {
-  return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
-      <PageHeader title="よくある質問" description="お電話でよくいただくご質問をまとめました。" />
+export const dynamic = "force-dynamic";
 
+export default async function FaqPage() {
+  let faqs: { q: string; a: string }[] = defaultFaqs;
+  try {
+    const stored = await prisma.faqEntry.findMany({ where: { isPublished: true }, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] });
+    if (stored.length) faqs = stored.map((item) => ({ q: item.question, a: item.answer }));
+  } catch {
+    faqs = defaultFaqs;
+  }
+
+  return (
+    <>
+      <PageHero eyebrow="FAQ" title="よくある質問" description="お電話でよくいただくご質問をまとめました。" />
+      <div className="mx-auto max-w-3xl px-4 pb-16 pt-10">
       <div className="mt-8 rounded-2xl border bg-card px-6 shadow-sm">
         <Accordion type="single" collapsible>
           {faqs.map((item, i) => (
@@ -75,11 +87,12 @@ export default function FaqPage() {
           {CLINIC.tel}
         </a>
         ）または
-        <a href="/contact" className="font-semibold text-primary hover:underline">
+        <Link href="/contact" className="font-semibold text-primary hover:underline">
           お問い合わせフォーム
-        </a>
+        </Link>
         までお気軽にご連絡ください。
       </p>
-    </div>
+      </div>
+    </>
   );
 }
