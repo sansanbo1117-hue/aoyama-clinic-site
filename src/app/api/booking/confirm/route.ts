@@ -7,11 +7,14 @@ import { prisma } from "@/lib/prisma";
 import { allowPublicSubmission } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
-  if (!(await allowPublicSubmission("booking-confirm"))) {
-    return NextResponse.json({ error: "リクエストが集中しています。時間をおいてから、もう一度お試しください。" }, { status: 429 });
-  }
   const parsed = instantBookingSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "入力内容を確認してください。" }, { status: 400 });
+  if (!(await allowPublicSubmission("booking-confirm"))) {
+    return NextResponse.json(
+      { error: "短時間に予約確定が繰り返されました。10分ほど待ってから、もう一度お試しください。" },
+      { status: 429, headers: { "Retry-After": "600" } }
+    );
+  }
   try {
     const { appointment, manageToken } = await confirmBooking(parsed.data);
     const job = await prisma.notificationJob.findFirst({ where: { appointmentId: appointment.id, type: "confirmation" } });

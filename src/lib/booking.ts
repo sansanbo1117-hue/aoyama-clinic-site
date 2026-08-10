@@ -92,7 +92,7 @@ export async function ensureDefaultBookingSetup() {
       name: "一般外来",
       bookingMode: "instant",
       defaultDurationMinutes: 20,
-      defaultCapacity: 1,
+      defaultCapacity: 3,
       bookingHorizonDays: 30,
       minLeadMinutes: 60,
       cancellationCutoffHours: 12,
@@ -103,7 +103,7 @@ export async function ensureDefaultBookingSetup() {
     await prisma.scheduleRule.upsert({
       where: { serviceTypeId_weekday_startTime_endTime: { serviceTypeId: service.id, weekday, startTime, endTime } },
       update: {},
-      create: { serviceTypeId: service.id, weekday, startTime, endTime, slotMinutes: 20, capacity: 1 },
+      create: { serviceTypeId: service.id, weekday, startTime, endTime, slotMinutes: 20, capacity: 3 },
     });
   }
 

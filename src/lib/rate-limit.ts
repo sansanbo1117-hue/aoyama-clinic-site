@@ -6,13 +6,17 @@ type RateLimitConfig = { windowMs: number; max: number };
 const LIMITS: Record<string, RateLimitConfig> = {
   contact: { windowMs: 10 * 60 * 1000, max: 5 },
   availability: { windowMs: 10 * 60 * 1000, max: 60 },
-  "booking-hold": { windowMs: 10 * 60 * 1000, max: 10 },
-  "booking-confirm": { windowMs: 10 * 60 * 1000, max: 5 },
+  // 時間枠の見比べでも呼ばれるため、通常操作を妨げない余裕を持たせる。
+  // 同一ブラウザの有効な仮押さえは holdSlot 側で常に1件へ制限される。
+  "booking-hold": { windowMs: 10 * 60 * 1000, max: 60 },
+  "booking-confirm": { windowMs: 10 * 60 * 1000, max: 10 },
   reschedule: { windowMs: 10 * 60 * 1000, max: 5 },
   "appointment-lookup": { windowMs: 15 * 60 * 1000, max: 5 },
   "admin-login": { windowMs: 15 * 60 * 1000, max: 5 },
 };
 const DEFAULT_LIMIT: RateLimitConfig = { windowMs: 10 * 60 * 1000, max: 10 };
+// 制限設定を変更した際、旧カウンターが利用者を弾き続けないようキーを世代管理する。
+const RATE_LIMIT_VERSION = "v2";
 
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -77,7 +81,7 @@ export function hashClientKey(value: string): string {
 
 async function checkLimit(scope: string, key: string): Promise<boolean> {
   const config = LIMITS[scope] ?? DEFAULT_LIMIT;
-  const storeKey = `ratelimit:${scope}:${key}`;
+  const storeKey = `ratelimit:${RATE_LIMIT_VERSION}:${scope}:${key}`;
 
   if (UPSTASH_URL && UPSTASH_TOKEN) {
     try {
