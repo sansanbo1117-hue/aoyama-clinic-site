@@ -86,7 +86,7 @@ export function formatSlotTime(date: Date) {
 export async function ensureDefaultBookingSetup() {
   const service = await prisma.serviceType.upsert({
     where: { code: SERVICE_CODE },
-    update: {},
+    update: { defaultCapacity: 3 },
     create: {
       code: SERVICE_CODE,
       name: "一般外来",
@@ -102,10 +102,22 @@ export async function ensureDefaultBookingSetup() {
   for (const [weekday, startTime, endTime] of WEEKLY_RULES) {
     await prisma.scheduleRule.upsert({
       where: { serviceTypeId_weekday_startTime_endTime: { serviceTypeId: service.id, weekday, startTime, endTime } },
-      update: {},
+      update: { capacity: 3, isActive: true },
       create: { serviceTypeId: service.id, weekday, startTime, endTime, slotMinutes: 20, capacity: 3 },
     });
   }
+
+  const currentRuleFilters = WEEKLY_RULES.map(([weekday, startTime, endTime]) => ({ weekday, startTime, endTime }));
+  await prisma.scheduleRule.updateMany({
+    where: { serviceTypeId: service.id, isActive: true, NOT: { OR: currentRuleFilters } },
+    data: { isActive: false },
+  });
+
+  // 既存の予約を残したまま、今後の時間枠だけを1枠3人へ揃える。
+  await prisma.appointmentSlot.updateMany({
+    where: { serviceTypeId: service.id, startsAt: { gte: new Date() } },
+    data: { capacity: 3 },
+  });
 
   const now = new Date();
   const rules = await prisma.scheduleRule.findMany({ where: { serviceTypeId: service.id, isActive: true } });
