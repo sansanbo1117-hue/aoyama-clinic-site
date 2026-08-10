@@ -173,7 +173,10 @@ export async function holdSlot(slotId: string, clientKey?: string) {
   const rawToken = randomToken();
   const expiresAt = new Date(Date.now() + HOLD_MINUTES * 60_000);
   await prisma.$transaction(async (tx) => {
-    await tx.$queryRaw`SELECT id FROM "AppointmentSlot" WHERE id = ${slotId} FOR UPDATE`;
+    // Prismaのschema指定は通常クエリには反映されるが、生SQLの未修飾テーブル名には
+    // 反映されない環境がある。本番・デモの別スキーマを安全に共有できるよう、
+    // テーブル行ロックではなく枠ID単位のトランザクションアドバイザリロックを使う。
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`slot:${slotId}`}))`;
     const slot = await tx.appointmentSlot.findUnique({ where: { id: slotId } });
     if (!slot || slot.status !== "open") throw new Error("この時間枠は受付を終了しています。");
     const [appointments, holds] = await Promise.all([
@@ -204,7 +207,7 @@ export async function confirmBooking(input: ConfirmBookingInput) {
   const appointment = await prisma.$transaction(async (tx) => {
     const hold = await tx.slotHold.findUnique({ where: { tokenHash: hash } });
     if (!hold || hold.consumedAt || hold.expiresAt <= new Date()) throw new Error("予約画面の有効期限が切れました。時間を選び直してください。");
-    await tx.$queryRaw`SELECT id FROM "AppointmentSlot" WHERE id = ${hold.slotId} FOR UPDATE`;
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`slot:${hold.slotId}`}))`;
     const slot = await tx.appointmentSlot.findUnique({ where: { id: hold.slotId } });
     if (!slot || slot.status !== "open") throw new Error("この時間枠は受付を終了しています。");
     const count = await tx.appointment.count({ where: { slotId: slot.id, status: { in: ACTIVE_APPOINTMENT_STATUSES } } });
@@ -283,8 +286,9 @@ export async function cancelAppointmentByToken(rawToken: string, reason = "患�
   if (access.appointment.status !== "confirmed") throw new Error("この予約はすでに変更されています。");
   if (access.appointment.slot.startsAt.getTime() - Date.now() < access.appointment.serviceType.cancellationCutoffHours * 60 * 60_000) throw new Error("診察開始時刻が近いため、Webからの取消受付を終了しています。お電話でご相談ください。");
   const updated = await prisma.$transaction(async (tx) => {
-    const locked = await tx.$queryRaw<Array<{ id: string }>>`SELECT id FROM "Appointment" WHERE id = ${access.appointment.id} FOR UPDATE`;
-    if (!locked.length) throw new Error("予約が見つかりません。");
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`appointment:${access.appointment.id}`}))`;
+    const locked = await tx.appointment.findUnique({ where: { id: access.appointment.id }, select: { id: true } });
+    if (!locked) throw new Error("予約が見つかりません。");
     const result = await tx.appointment.update({ where: { id: access.appointment.id }, data: { status: "cancelled_by_patient", cancelledAt: new Date(), cancellationReason: reason } });
     await tx.appointmentEvent.create({ data: { appointmentId: result.id, eventType: "cancelled", actorType: "patient_web", metadata: JSON.stringify({ reason }) } });
     await tx.notificationJob.create({ data: { appointmentId: result.id, type: "cancellation", dedupeKey: `cancellation:${result.id}`, scheduledFor: new Date() } });
@@ -301,7 +305,7 @@ export async function rescheduleAppointmentByToken(rawToken: string, newSlotId: 
   if (access.appointment.slot.startsAt.getTime() - Date.now() < access.appointment.serviceType.cancellationCutoffHours * 60 * 60_000) throw new Error("診察開始時刻が近いため、Webからの変更受付を終了しています。お電話でご相談ください。");
   const updated = await prisma.$transaction(async (tx) => {
     const slotIds = [access.appointment.slotId, newSlotId].sort();
-    for (const slotId of slotIds) await tx.$queryRaw`SELECT id FROM "AppointmentSlot" WHERE id = ${slotId} FOR UPDATE`;
+    for (const slotId of slotIds) await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`slot:${slotId}`}))`;
     const newSlot = await tx.appointmentSlot.findUnique({ where: { id: newSlotId } });
     if (!newSlot || newSlot.serviceTypeId !== access.appointment.serviceTypeId || newSlot.status !== "open") throw new Error("選択した時間枠は受付できません。");
     const [appointments, holds] = await Promise.all([
@@ -337,7 +341,7 @@ export async function createStaffAppointment(input: StaffAppointmentInput) {
   const card = input.patientCardNumber ? normalizePatientCardNumber(input.patientCardNumber) : "";
   const chart = input.chartNumber ? normalizePatientCardNumber(input.chartNumber) : "";
   const appointment = await prisma.$transaction(async (tx) => {
-    await tx.$queryRaw`SELECT id FROM "AppointmentSlot" WHERE id = ${input.slotId} FOR UPDATE`;
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${`slot:${input.slotId}`}))`;
     const slot = await tx.appointmentSlot.findUnique({ where: { id: input.slotId } });
     if (!slot || slot.status !== "open") throw new Error("この診療枠は受付できません。");
     const [appointments, holds] = await Promise.all([
