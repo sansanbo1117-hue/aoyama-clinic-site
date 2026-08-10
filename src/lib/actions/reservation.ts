@@ -53,3 +53,29 @@ export async function updateReservationStatus(
 
   revalidatePath("/admin/reservations");
 }
+
+export async function deleteCancelledReservation(id: string): Promise<void> {
+  if (!(await isAuthenticated())) {
+    throw new Error("Unauthorized");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const deleted = await tx.reservation.deleteMany({
+      where: { id, status: "cancelled" },
+    });
+    if (deleted.count !== 1) {
+      throw new Error("取消済みの予約だけ削除できます。");
+    }
+
+    await tx.auditEvent.create({
+      data: {
+        actorType: "staff",
+        action: "reservation.deleted",
+        entityType: "Reservation",
+        entityId: id,
+      },
+    });
+  });
+
+  revalidatePath("/admin/reservations");
+}

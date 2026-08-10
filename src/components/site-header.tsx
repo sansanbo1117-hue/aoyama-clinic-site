@@ -38,13 +38,15 @@ export function SiteHeader() {
             <Phone aria-hidden />
             <span><small>電話でのお問い合わせ</small><strong>{CLINIC.tel}</strong></span>
           </a>
-          <Link href="/reserve" className="header-reserve">
-            <CalendarCheck aria-hidden /><span>予約<br />リクエスト</span>
-          </Link>
-          <Link href="/appointments/manage" className="hidden text-xs font-bold text-primary underline-offset-4 hover:underline lg:block">
-            <ClipboardCheck className="mx-auto size-4" aria-hidden />
-            予約確認・取消
-          </Link>
+          <div className="header-booking-actions">
+            <Link href="/reserve" className="header-reserve">
+              <CalendarCheck aria-hidden /><span>Web予約</span>
+            </Link>
+            <Link href="/appointments/manage" className="header-manage">
+              <ClipboardCheck aria-hidden />
+              <span>予約確認・変更・取消</span>
+            </Link>
+          </div>
           <MobileNav />
         </div>
       </div>

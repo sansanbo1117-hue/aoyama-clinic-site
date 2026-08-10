@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export function AppointmentLookupForm() {
+  const router = useRouter();
   const [form, setForm] = useState({ appointmentCode: "", phone: "", birthDate: "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -15,7 +17,7 @@ export function AppointmentLookupForm() {
       const response = await fetch("/api/appointments/lookup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
       const data = await response.json() as { token?: string; error?: string };
       if (!response.ok || !data.token) throw new Error(data.error ?? "予約を確認できませんでした。");
-      window.location.href = `/appointments/manage?token=${encodeURIComponent(data.token)}`;
+      router.push(`/appointments/manage?token=${encodeURIComponent(data.token)}`);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "予約を確認できませんでした。");
       setBusy(false);

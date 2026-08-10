@@ -55,7 +55,7 @@ const defaultFaqs = [
   },
 ];
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function FaqPage() {
   let faqs: { q: string; a: string }[] = defaultFaqs;

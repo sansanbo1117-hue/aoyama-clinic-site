@@ -425,6 +425,7 @@ body {
 .header-actions {
   display: flex;
   align-items: stretch;
+  flex: 0 0 auto;
 }
 
 .header-phone {
@@ -458,18 +459,27 @@ body {
   letter-spacing: 0.04em;
 }
 
-.header-reserve {
+.header-booking-actions {
+  display: grid;
+  width: 166px;
+  grid-template-rows: minmax(0, 1fr) 36px;
+  border-left: 1px solid rgba(22, 36, 29, 0.1);
+}
+
+.header-reserve,
+.header-manage {
   display: flex;
-  width: 112px;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  font-weight: 700;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.header-reserve {
   background: var(--primary);
   color: white;
   font-size: var(--text-sm);
-  font-weight: 700;
-  line-height: 1.35;
-  transition: background 180ms ease;
 }
 
 .header-reserve:hover {
@@ -478,6 +488,23 @@ body {
 
 .header-reserve svg {
   width: 20px;
+}
+
+.header-manage {
+  border-top: 1px solid rgba(22, 36, 29, 0.1);
+  background: #f5faf7;
+  color: var(--primary);
+  font-size: 11px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.header-manage:hover {
+  background: var(--secondary);
+}
+
+.header-manage svg {
+  width: 15px;
 }
 
 /* Hero */
@@ -1412,6 +1439,9 @@ body {
   .header-phone svg {
     width: 22px;
   }
+  .header-booking-actions {
+    width: 150px;
+  }
   .hero-copy {
     padding-left: 40px;
   }
@@ -1427,6 +1457,30 @@ body {
   }
   .department-tags {
     display: none;
+  }
+}
+
+@media (max-width: 1080px) {
+  .header-inner {
+    margin-left: 18px;
+  }
+  .brand {
+    min-width: 0;
+  }
+  .desktop-nav,
+  .header-booking-actions {
+    display: none;
+  }
+  .header-actions {
+    margin-left: auto;
+    align-items: center;
+    gap: 4px;
+    padding-right: 10px;
+  }
+  .header-phone {
+    min-height: 44px;
+    min-width: 44px;
+    border-left: none;
   }
 }
 
@@ -1464,7 +1518,7 @@ body {
     display: none;
   }
   .desktop-nav,
-  .header-reserve {
+  .header-booking-actions {
     display: none;
   }
   .header-actions {

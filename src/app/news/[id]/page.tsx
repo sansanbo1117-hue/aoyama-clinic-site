@@ -7,7 +7,6 @@ import { prisma } from "@/lib/prisma";
 import { NEWS_CATEGORIES } from "@/lib/validations";
 
 export const revalidate = 60;
-export const dynamic = "force-dynamic";
 
 export default async function NewsDetailPage({
   params,

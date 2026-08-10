@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { initializeSchedule, updateSlotStatus } from "@/lib/actions/schedule";
-import { ensureDefaultBookingSetup, formatSlotTime, getJapanDate } from "@/lib/booking";
+import { formatSlotTime, getJapanDate } from "@/lib/booking";
 import { prisma } from "@/lib/prisma";
 
 function addDays(date: string, offset: number) { const value = new Date(`${date}T00:00:00+09:00`); value.setUTCDate(value.getUTCDate() + offset); return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit" }).format(value); }
@@ -11,8 +11,7 @@ export default async function AdminSchedulePage({ searchParams }: { searchParams
   const date = /^\d{4}-\d{2}-\d{2}$/.test(requested) ? requested : getJapanDate();
   const from = new Date(`${date}T00:00:00+09:00`);
   const to = new Date(`${addDays(date, 7)}T00:00:00+09:00`);
-  const service = await ensureDefaultBookingSetup();
-  const slots = await prisma.appointmentSlot.findMany({ where: { serviceTypeId: service.id, startsAt: { gte: from, lt: to } }, include: { appointments: { where: { status: { in: ["confirmed", "checked_in"] } }, include: { patient: true }, select: { id: true, source: true, patient: { select: { name: true } } } }, holds: { where: { consumedAt: null, expiresAt: { gt: new Date() } }, select: { id: true } } }, orderBy: { startsAt: "asc" } });
+  const slots = await prisma.appointmentSlot.findMany({ where: { serviceType: { code: "outpatient", isActive: true }, startsAt: { gte: from, lt: to } }, include: { appointments: { where: { status: { in: ["confirmed", "checked_in"] } }, select: { id: true, source: true, patient: { select: { name: true } } } }, holds: { where: { consumedAt: null, expiresAt: { gt: new Date() } }, select: { id: true } } }, orderBy: { startsAt: "asc" } });
   const grouped = new Map<string, typeof slots>();
   for (const slot of slots) { const key = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit" }).format(slot.startsAt); grouped.set(key, [...(grouped.get(key) ?? []), slot]); }
   const dates = Array.from({ length: 7 }, (_, index) => addDays(date, index));

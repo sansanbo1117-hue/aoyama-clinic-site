@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+export const dynamic = "force-dynamic";
+
 const links = [
   { href: "/admin", label: "今日の受付" },
   { href: "/admin/patients", label: "患者検索" },

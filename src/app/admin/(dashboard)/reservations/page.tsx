@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { RESERVATION_TYPES, DESIRED_TIME_OPTIONS } from "@/lib/validations";
 import { ReservationStatusSelect } from "@/components/admin/reservation-status-select";
+import { ReservationDeleteButton } from "@/components/admin/reservation-delete-button";
 import { Badge } from "@/components/ui/badge";
 import { formatSlotTime } from "@/lib/booking";
 
@@ -106,6 +107,7 @@ export default async function AdminReservationsPage() {
                     {r.notes}
                   </p>
                 )}
+                {r.status === "cancelled" ? <ReservationDeleteButton id={r.id} /> : null}
               </div>
             );
           })}

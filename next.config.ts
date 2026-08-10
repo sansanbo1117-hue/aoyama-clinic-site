@@ -29,6 +29,7 @@ const SECURITY_HEADERS = [
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/client"],
+  turbopack: { root: process.cwd() },
   async headers() {
     // 開発モードのReact DevTools/HMRはeval()やWebSocketを使うため、
     // 本番CSPを弱めずに両立させることができない。本番ビルドでのみ適用する。

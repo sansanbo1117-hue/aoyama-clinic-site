@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarCheck, Menu, Phone, X } from "lucide-react";
+import { CalendarCheck, ClipboardCheck, Menu, Phone, X } from "lucide-react";
 
 import { NAV_LINKS } from "@/lib/clinic-info";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <div className="relative min-[901px]:hidden">
+    <div className="relative min-[1081px]:hidden">
       <Button
         variant="ghost"
         size="icon"
@@ -68,9 +68,16 @@ export function MobileNav() {
               >
                 <CalendarCheck className="size-5" aria-hidden /> Web予約
               </Link>
+              <Link
+                href="/appointments/manage"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center gap-2 border border-primary bg-background px-4 py-3.5 text-sm font-bold text-primary"
+              >
+                <ClipboardCheck className="size-5" aria-hidden /> 予約確認・変更・取消
+              </Link>
               <a
                 href={CLINIC.telHref}
-                className="flex items-center justify-center gap-2 bg-primary px-4 py-3.5 text-sm font-bold text-primary-foreground"
+                className="flex items-center justify-center gap-2 bg-primary px-4 py-3.5 text-sm font-bold text-primary-foreground sm:col-span-2"
               >
                 <Phone className="size-5" aria-hidden /> {CLINIC.tel}
               </a>

@@ -12,7 +12,6 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 60;
-export const dynamic = "force-dynamic";
 
 export default async function NewsListPage() {
   let news: Awaited<ReturnType<typeof prisma.newsPost.findMany>> = [];

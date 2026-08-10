@@ -20,9 +20,8 @@ function slotState(used: number, capacity: number, status: string) {
 export default async function AdminDashboardPage() {
   const today = getJapanDate();
   const { from, to } = dayRange(today);
-  const service = await prisma.serviceType.findFirst({ where: { code: "outpatient", isActive: true } });
   const [slots, tasks] = await Promise.all([
-    service ? prisma.appointmentSlot.findMany({ where: { serviceTypeId: service.id, startsAt: { gte: from, lte: to } }, include: { appointments: { where: { status: { in: ["confirmed", "checked_in"] } }, include: { patient: true }, orderBy: { confirmedAt: "asc" } }, holds: { where: { consumedAt: null, expiresAt: { gt: new Date() } }, select: { id: true } } }, orderBy: { startsAt: "asc" } }) : Promise.resolve([]),
+    prisma.appointmentSlot.findMany({ where: { serviceType: { code: "outpatient", isActive: true }, startsAt: { gte: from, lte: to } }, include: { appointments: { where: { status: { in: ["confirmed", "checked_in"] } }, select: { id: true, source: true, receptionStatus: true, patient: { select: { name: true } } }, orderBy: { confirmedAt: "asc" } }, holds: { where: { consumedAt: null, expiresAt: { gt: new Date() } }, select: { id: true } } }, orderBy: { startsAt: "asc" } }),
     prisma.receptionTask.findMany({ where: { status: "open" }, include: { patient: true }, orderBy: [{ priority: "desc" }, { createdAt: "asc" }], take: 5 }),
   ]);
 
